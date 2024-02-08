@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { List, ListItem, ListItemText, Button, ListItemSecondaryAction } from '@mui/material'
+import { List, ListItem, ListItemText, Button, ListItemSecondaryAction, useTheme, Box, Divider } from '@mui/material'
 import { IdentityCard } from 'metanet-identity-react'
 
 export interface Payment {
@@ -22,9 +22,13 @@ interface PaymentListProps {
 }
 
 const PaymentList: React.FC<PaymentListProps> = ({ payments, onAccept, onReject }) => {
+const theme = useTheme()
+  console.log('a', theme)
   return (
     <List>
       {payments.map(payment => (
+        <Box>
+          <Divider />
         <ListItem key={payment.messageId}>
           <IdentityCard 
             confederacyHost={'https://staging-confederacy.babbage.systems'}
@@ -37,6 +41,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onAccept, onReject 
             <Button onClick={() => onReject(payment.messageId)} color="secondary">Reject</Button>
           </ListItemSecondaryAction>
         </ListItem>
+        </Box>
       ))}
     </List>
   )
