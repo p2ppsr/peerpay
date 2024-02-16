@@ -5,7 +5,6 @@ import PaymentList, { Payment } from './components/PaymentList'
 import PaymentTokenator from 'payment-tokenator'
 import { useTheme } from '@mui/material/styles'
 import { toast } from 'react-toastify'
-import { getPublicKey, getVersion } from '@babbage/sdk-ts'
 import BabbDownloadButton from './components/BabbDownloadButton'
 
 const App: React.FC = () => {
@@ -51,16 +50,7 @@ const App: React.FC = () => {
               MetaNet Client Required!
               <BabbDownloadButton variant='outlined' color='primary' hideOnMobile />
             </div>
-            // <div>
-            //   No MetaNet Client found!
-            //   <button
-            //     style={{ marginLeft: '10px', cursor: 'pointer' }}
-            //     onClick={() => window.open('https://your-download-url.com', '_blank')}
-            //   >
-            //     Download
-            //   </button>
-            // </div>
-          );
+          )
 
           toast.error(<CustomToastContent />, {
             autoClose: false, // This prevents the toast from automatically closing
