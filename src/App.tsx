@@ -6,6 +6,7 @@ import PaymentTokenator from 'payment-tokenator'
 import { useTheme } from '@mui/material/styles'
 import { toast } from 'react-toastify'
 import { getPublicKey, getVersion } from '@babbage/sdk-ts'
+import BabbDownloadButton from './components/BabbDownloadButton'
 
 const App: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([])
@@ -38,10 +39,40 @@ const App: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      setLoading(true)
-      const paymentsToReceive = await paymentTokenator.listIncomingPayments()
-      console.log('incoming payments', paymentsToReceive)
-      setPayments(paymentsToReceive)
+      try {
+        setLoading(true)
+        const paymentsToReceive = await paymentTokenator.listIncomingPayments()
+        console.log('incoming payments', paymentsToReceive)
+        setPayments(paymentsToReceive)
+      } catch (error: any) {
+        if (error.code === 'ERR_NO_METANET_IDENTITY') {
+          const CustomToastContent = () => (
+            <div>
+              MetaNet Client Required!
+              <BabbDownloadButton variant='outlined' color='primary' hideOnMobile />
+            </div>
+            // <div>
+            //   No MetaNet Client found!
+            //   <button
+            //     style={{ marginLeft: '10px', cursor: 'pointer' }}
+            //     onClick={() => window.open('https://your-download-url.com', '_blank')}
+            //   >
+            //     Download
+            //   </button>
+            // </div>
+          );
+
+          toast.error(<CustomToastContent />, {
+            autoClose: false, // This prevents the toast from automatically closing
+            closeButton: true, // This ensures there's a close button for the user to manually close the toast
+            draggable: false,
+            closeOnClick: false,
+            style: {
+              overflow: 'visible'
+            }
+          });
+        }
+      }
       setLoading(false)
     })()
   }, [])
