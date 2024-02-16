@@ -5,6 +5,7 @@ import PaymentList, { Payment } from './components/PaymentList'
 import PaymentTokenator from 'payment-tokenator'
 import { useTheme } from '@mui/material/styles'
 import { toast } from 'react-toastify'
+import { getPublicKey, getVersion } from '@babbage/sdk-ts'
 
 const App: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([])
@@ -28,6 +29,7 @@ const App: React.FC = () => {
 
   const handleAcceptPayment = async (payment: Payment) => {
     await paymentTokenator.acceptPayment(payment)
+    setPayments([...payments.filter(x => x.messageId !== payment.messageId)])
   }
 
   const handleRejectPayment = (id: string) => {
@@ -35,19 +37,19 @@ const App: React.FC = () => {
   }
 
   useEffect(() => {
-    (async() => {
-        setLoading(true)
-        const paymentsToReceive = await paymentTokenator.listIncomingPayments()
-        console.log('incoming payments', paymentsToReceive)
-        setPayments(paymentsToReceive)
-        setLoading(false)
+    (async () => {
+      setLoading(true)
+      const paymentsToReceive = await paymentTokenator.listIncomingPayments()
+      console.log('incoming payments', paymentsToReceive)
+      setPayments(paymentsToReceive)
+      setLoading(false)
     })()
-}, [])
+  }, [])
 
   return (
     <Container maxWidth="sm">
       <Box
-         sx={{
+        sx={{
           bgcolor: 'background.default', // Use the default background color from the theme
           minHeight: '100vh', // Ensure it covers the full viewport height
           // minWidth: '100vw', // Ensure it covers the full viewport width
@@ -62,16 +64,16 @@ const App: React.FC = () => {
           alignItems: 'center', // Center items horizontally in the container
           pt: 4, // Add padding to the top
         }}>
-            <img src='https://peerpay.babbage.systems/Images/PeerPay.png' width={'300px'}/>
-            <Typography variant="body1" paddingTop={5}>
-          Simple Peer-to-peer Payments
-        </Typography> 
+          <img src='https://peerpay.babbage.systems/Images/PeerPay.png' width={'300px'} />
+          <Typography variant="body1" paddingTop={5}>
+            Simple Peer-to-peer Payments
+          </Typography>
           <PaymentForm onSend={handleSendPayment} />
         </Box>
         <Typography variant="h6" component="h2" paddingTop={5}>
           Incoming Payments
-        </Typography> 
-        {loading && <LinearProgress/>}
+        </Typography>
+        {loading && <LinearProgress />}
         <PaymentList payments={payments} onAccept={handleAcceptPayment} onReject={handleRejectPayment} />
       </Box>
     </Container>
