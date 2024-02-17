@@ -6,7 +6,7 @@ import App from './App'
 import web3Theme from './theme';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'
-import { MNCErrorHandlerProvider } from '../../metanet-react-prompts/src/utils/index'
+import { MNCErrorHandlerProvider } from 'metanet-react-prompt'
 
 ReactDOM.render(
   <ThemeProvider theme={web3Theme}>
