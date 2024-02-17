@@ -5,14 +5,14 @@ import PaymentList, { Payment } from './components/PaymentList'
 import PaymentTokenator from 'payment-tokenator'
 import { useTheme } from '@mui/material/styles'
 import { toast } from 'react-toastify'
-import BabbDownloadButton from './components/BabbDownloadButton'
+import { useMNCErrorHandler } from 'metanet-react-prompt'
 
 const App: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([])
   const paymentTokenator = new PaymentTokenator()
   const [loading, setLoading] = useState(false)
   const theme = useTheme()
-  console.log('t', theme)
+  const handleMNCError = useMNCErrorHandler();
 
   const handleSendPayment = async (amount: string, recipient: string) => {
     try {
@@ -45,23 +45,14 @@ const App: React.FC = () => {
         setPayments(paymentsToReceive)
       } catch (error: any) {
         if (error.code === 'ERR_NO_METANET_IDENTITY') {
-          const CustomToastContent = () => (
-            <div>
-              MetaNet Client Required!
-              <BabbDownloadButton variant='outlined' color='primary' hideOnMobile />
-            </div>
-          )
-
-          toast.error(<CustomToastContent />, {
-            autoClose: false, // This prevents the toast from automatically closing
-            closeButton: true, // This ensures there's a close button for the user to manually close the toast
-            draggable: false,
-            closeOnClick: false,
-            style: {
-              overflow: 'visible'
-            }
-          });
+          // Set the state to indicate the specific MNC error
+          // setHasMNCError(true);
+          handleMNCError(error);
+        } else {
+          // Handle other errors or rethrow them
+          console.error(error);
         }
+        // }
       }
       setLoading(false)
     })()

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { CssBaseline } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles';
@@ -6,11 +6,12 @@ import App from './App'
 import web3Theme from './theme';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'
+import { MNCErrorHandlerProvider } from '../../metanet-react-prompts/src/utils/index'
 
 ReactDOM.render(
   <ThemeProvider theme={web3Theme}>
     <ToastContainer
-      position="top-right"
+      position='top-right'
       autoClose={5000} // auto close after 5 seconds
       hideProgressBar={false}
       newestOnTop={false}
@@ -21,7 +22,9 @@ ReactDOM.render(
       pauseOnHover
     />
     <CssBaseline />
-    <App />
+    <MNCErrorHandlerProvider>
+      <App />
+    </MNCErrorHandlerProvider>
   </ThemeProvider>,
   document.getElementById('root')
 )
