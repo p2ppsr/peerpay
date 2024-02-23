@@ -11,7 +11,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
   const [recipient, setRecipient] = useState<Identity>({} as Identity)
   const [amount, setAmount] = useState('')
   const theme = useTheme()
-  console.log('pf', theme)
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -31,15 +30,15 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
-        <IdentitySearchField 
-            confederacyHost={'https://staging-confederacy.babbage.systems'} 
-            onIdentitySelected={(identity) => {
-                setRecipient(identity)
-            }}
-            theme={theme}
-        />
-      <TextField sx={{width: '350px'}} label="Amount (satoshis)" variant="filled" value={amount} onChange={e => setAmount(e.target.value)} />
-      <Button sx={{ width: '10em'}} type="submit" variant="contained">Send</Button>
+      <IdentitySearchField
+        confederacyHost={'https://staging-confederacy.babbage.systems'}
+        onIdentitySelected={(identity) => {
+          setRecipient(identity)
+        }}
+        theme={theme}
+      />
+      <TextField sx={{ width: '350px' }} label="Amount (satoshis)" variant="filled" value={amount} onChange={e => setAmount(e.target.value)} />
+      <Button sx={{ width: '10em' }} type="submit" variant="contained">Send</Button>
     </Box>
   )
 }

@@ -3,16 +3,16 @@ import { List, ListItem, ListItemText, Button, ListItemSecondaryAction, useTheme
 import { IdentityCard } from 'metanet-identity-react'
 
 export interface Payment {
-    messageId: string
+  messageId: string
   sender: string
   amount: string
   token: Token
 }
 
 interface Token {
-    amount: number,
-    derivationPrefix: string,
-    transaction: object
+  amount: number,
+  derivationPrefix: string,
+  transaction: object
 }
 
 interface PaymentListProps {
@@ -22,25 +22,24 @@ interface PaymentListProps {
 }
 
 const PaymentList: React.FC<PaymentListProps> = ({ payments, onAccept, onReject }) => {
-const theme = useTheme()
-  console.log('a', theme)
+  const theme = useTheme()
   return (
     <List>
       {payments.map(payment => (
-        <Box>
+        <Box key={payment.messageId}>
           <Divider />
-        <ListItem key={payment.messageId}>
-          <IdentityCard 
-            confederacyHost={'https://staging-confederacy.babbage.systems'}
-            identityKey={payment.sender} 
-            themeMode='dark'
-          />
-          <ListItemText primary={`${payment.token.amount} satoshis`} />
-          <ListItemSecondaryAction>
-            <Button onClick={() => onAccept(payment)} color="primary">Accept</Button>
-            <Button onClick={() => onReject(payment.messageId)} color="secondary">Reject</Button>
-          </ListItemSecondaryAction>
-        </ListItem>
+          <ListItem>
+            <IdentityCard
+              confederacyHost={'https://staging-confederacy.babbage.systems'}
+              identityKey={payment.sender}
+              themeMode='dark'
+            />
+            <ListItemText primary={`${payment.token.amount} satoshis`} />
+            <ListItemSecondaryAction>
+              <Button onClick={() => onAccept(payment)} color="primary">Accept</Button>
+              <Button onClick={() => onReject(payment.messageId)} color="secondary">Reject</Button>
+            </ListItemSecondaryAction>
+          </ListItem>
         </Box>
       ))}
     </List>
