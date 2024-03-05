@@ -5,14 +5,14 @@ import PaymentList, { Payment } from './components/PaymentList'
 import PaymentTokenator from 'payment-tokenator'
 import { useTheme } from '@mui/material/styles'
 import { toast } from 'react-toastify'
-import { useMNCErrorHandler } from 'metanet-react-prompt'
+// import { useMNCErrorHandler } from 'metanet-react-prompt'
 
 const App: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([])
   const paymentTokenator = new PaymentTokenator()
   const [loading, setLoading] = useState(false)
   const theme = useTheme()
-  const handleMNCError = useMNCErrorHandler();
+  // const handleMNCError = useMNCErrorHandler();
 
   const handleSendPayment = async (amount: string, recipient: string) => {
     try {
@@ -47,7 +47,7 @@ const App: React.FC = () => {
         if (error.code === 'ERR_NO_METANET_IDENTITY') {
           // Set the state to indicate the specific MNC error
           // setHasMNCError(true);
-          handleMNCError(error);
+          // handleMNCError(error);
         } else {
           // Handle other errors or rethrow them
           console.error(error);
