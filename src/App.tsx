@@ -38,6 +38,10 @@ const App: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
+        setLoading(true)
+        const paymentsToReceive = await paymentTokenator.listIncomingPayments()
+        console.log('incoming payments', paymentsToReceive)
+        setPayments(paymentsToReceive)
         await paymentTokenator.listenForLivePayments({
           onPayment: (payment: any) => {
             setLoading(true)
@@ -62,6 +66,7 @@ const App: React.FC = () => {
         }
         // }
       }
+      setLoading(false)
     })()
   }, [])
 
