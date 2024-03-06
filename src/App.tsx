@@ -16,12 +16,11 @@ const App: React.FC = () => {
 
   const handleSendPayment = async (amount: string, recipient: string) => {
     try {
-      const newPayment = await paymentTokenator.sendPayment({
+      await paymentTokenator.sendLivePayment({
         recipient,
         amount: Number(amount)
       })
       toast.success('Payment successfully sent! 🎉')
-      console.log(newPayment)
     } catch (error) {
       toast.error('Failed to send payment! 😭')
     }
@@ -39,10 +38,19 @@ const App: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        setLoading(true)
-        const paymentsToReceive = await paymentTokenator.listIncomingPayments()
-        console.log('incoming payments', paymentsToReceive)
-        setPayments(paymentsToReceive)
+        await paymentTokenator.listenForLivePayments({
+          onPayment: (payment: any) => {
+            setLoading(true)
+            setPayments(prevPayments => [...prevPayments, {
+              messageId: payment.messageId,
+              sender: payment.sender,
+              amount: payment.body.amount,
+              token: payment.body
+            }])
+            setLoading(false)
+          }
+        })
+        // console.log('incoming payments', paymentsToReceive)
       } catch (error: any) {
         if (error.code === 'ERR_NO_METANET_IDENTITY') {
           // Set the state to indicate the specific MNC error
@@ -54,7 +62,6 @@ const App: React.FC = () => {
         }
         // }
       }
-      setLoading(false)
     })()
   }, [])
 
