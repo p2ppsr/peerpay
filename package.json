@@ -13,13 +13,13 @@
     "email-tokenator": "^0.1.17",
     "metanet-identity-react": "^0.1.13",
     "metanet-react-prompt": "^0.1.0",
-    "payment-tokenator": "^0.2.10",
+    "payment-tokenator": "^0.2.11",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^5.3.4",
     "react-router-dom": "^5.3.4",
     "react-toastify": "^8.2.0",
-    "uhrp-react": "^0.2.11",
+    "uhrp-react": "^0.2.12",
     "zustand": "^4.5.0"
   },
   "scripts": {
