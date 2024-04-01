@@ -11,5 +11,12 @@
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+    "babbage": {
+    "protocolPermissions": {
+      "3241645161d8": "Needs permission to derive a public key used in payment to a peer.",
+      "authrite message signature": "Needs permission to make authenticated requests when making payments.",
+      "identity key": "Needs permission to identify you when making payments."
+    }
+  }
 }
