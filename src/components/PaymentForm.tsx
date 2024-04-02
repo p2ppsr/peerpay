@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { TextField, Button, Box, useTheme } from '@mui/material'
 import { Identity, IdentitySearchField } from 'metanet-identity-react'
 import { toast } from 'react-toastify'
+import constants from '../utils/constants'
 
 interface PaymentFormProps {
   onSend: (amount: string, recipient: string) => void
@@ -31,7 +32,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
   return (
     <Box component='form' onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
       <IdentitySearchField
-        confederacyHost={'https://staging-confederacy.babbage.systems'}
+        confederacyHost={constants.confederacyURL}
         onIdentitySelected={(identity) => {
           setRecipient(identity)
         }}
