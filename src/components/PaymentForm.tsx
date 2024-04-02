@@ -29,7 +29,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
   }
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
+    <Box component='form' onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
       <IdentitySearchField
         confederacyHost={'https://staging-confederacy.babbage.systems'}
         onIdentitySelected={(identity) => {
@@ -37,8 +37,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
         }}
         theme={theme}
       />
-      <TextField sx={{ width: '350px' }} label="Amount (satoshis)" variant="filled" value={amount} onChange={e => setAmount(e.target.value)} />
-      <Button sx={{ width: '10em' }} type="submit" variant="contained">Send</Button>
+      <TextField sx={{ width: '350px' }} label='Amount (satoshis)' variant='filled' value={amount} onChange={e => setAmount(e.target.value)} />
+      <Button sx={{ width: '10em' }} type='submit' variant='contained'>Send</Button>
     </Box>
   )
 }

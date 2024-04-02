@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { List, ListItem, ListItemText, Button, ListItemSecondaryAction, useTheme, Box, Divider } from '@mui/material'
 import { IdentityCard } from 'metanet-identity-react'
+import constants from '../utils/constants'
 
 export interface Payment {
   messageId: string
@@ -30,14 +31,14 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onAccept, onReject 
           <Divider />
           <ListItem>
             <IdentityCard
-              confederacyHost={'https://staging-confederacy.babbage.systems'}
+              confederacyHost={constants.confederacyURL}
               identityKey={payment.sender}
               themeMode='dark'
             />
             <ListItemText primary={`${payment.token.amount} satoshis`} />
             <ListItemSecondaryAction>
-              <Button onClick={() => onAccept(payment)} color="primary">Accept</Button>
-              <Button onClick={() => onReject(payment.messageId)} color="secondary">Reject</Button>
+              <Button onClick={() => onAccept(payment)} color='primary'>Accept</Button>
+              <Button onClick={() => onReject(payment.messageId)} color='secondary'>Reject</Button>
             </ListItemSecondaryAction>
           </ListItem>
         </Box>
