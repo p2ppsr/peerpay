@@ -113,7 +113,7 @@ const App: React.FC = () => {
           }}
         >
           <img
-            src='https://peerpay.babbage.systems/Images/PeerPay.png'
+            src='/PeerPay.png'
             width={'300px'}
           />
           <Typography variant='body1' paddingTop={5}>
