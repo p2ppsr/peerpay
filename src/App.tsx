@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Container, Typography, Box, LinearProgress } from '@mui/material'
 import PaymentForm from './components/PaymentForm'
 import PaymentList, { Payment } from './components/PaymentList'
@@ -17,7 +17,7 @@ const App: React.FC = () => {
   const paymentTokenator = new PaymentTokenator({ peerServHost: constants.peerservURL })
   const [loading, setLoading] = useState(false)
   const theme = useTheme()
-  const [isMncMissing, setIsMncMissing] = useState(false) // Added state to control NoMncModal visibility
+  const [isMncMissing, setIsMncMissing] = useState(false)
 
 
   // Run a 1s interval for checking if MNC is running
@@ -25,9 +25,9 @@ const App: React.FC = () => {
     const intervalId = setInterval(async () => {
       const hasMNC = await checkForMetaNetClient()
       if (hasMNC === 0) {
-        setIsMncMissing(true) // Open modal if MNC is not found
+        setIsMncMissing(true)
       } else {
-        setIsMncMissing(false) // Ensure modal is closed if MNC is found
+        setIsMncMissing(false)
       }
     }, 1000)
 
@@ -61,8 +61,8 @@ const App: React.FC = () => {
     try {
       setLoading(true)
       const paymentsToReceive = await paymentTokenator.listIncomingPayments()
-      console.log('incoming payments', paymentsToReceive)
       setPayments(paymentsToReceive)
+
       await paymentTokenator.listenForLivePayments({
         onPayment: (payment: any) => {
           setLoading(true)
@@ -77,8 +77,8 @@ const App: React.FC = () => {
           ])
           setLoading(false)
         },
+        autoAcknowledge: false
       })
-      // console.log('incoming payments', paymentsToReceive)
     } catch (error) {
       // @ts-ignore
       if (error.code === 'ERR_NO_METANET_IDENTITY') {
@@ -96,24 +96,23 @@ const App: React.FC = () => {
       <NoMncModal open={isMncMissing} onClose={() => setIsMncMissing(false)} />
       <Box
         sx={{
-          bgcolor: 'background.default', // Use the default background color from the theme
-          minHeight: '100vh', // Ensure it covers the full viewport height
-          // minWidth: '100vw', // Ensure it covers the full viewport width
-          color: 'text.primary', // Use the primary text color from the theme
-          pt: 5, // Add padding to the top, '4' is based on the theme's spacing scale
+          bgcolor: 'background.default',
+          minHeight: '100vh',
+          color: 'text.primary',
+          pt: 5,
         }}
       >
         <Box
           sx={{
-            display: 'flex', // Enable flex container
-            flexDirection: 'column', // Stack children vertically
-            justifyContent: 'center', // Center horizontally (in the context of the column layout)
-            alignItems: 'center', // Center items horizontally in the container
-            pt: 4, // Add padding to the top
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            pt: 4,
           }}
         >
           <img
-            src='https://peerpay.babbage.systems/Images/PeerPay.png'
+            src='/PeerPay.png'
             width={'300px'}
           />
           <Typography variant='body1' paddingTop={5}>
