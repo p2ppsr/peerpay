@@ -37,6 +37,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
           setRecipient(identity)
         }}
         theme={theme}
+        appName='PeerPay'
       />
       <TextField sx={{ width: '350px' }} label='Amount (satoshis)' variant='filled' value={amount} onChange={e => setAmount(e.target.value)} />
       <Button sx={{ width: '10em' }} type='submit' variant='contained'>Send</Button>
