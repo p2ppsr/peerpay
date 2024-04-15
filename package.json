@@ -13,7 +13,7 @@
     "email-tokenator": "^0.1.24",
     "metanet-identity-react": "^0.1.42",
     "metanet-react-prompt": "^0.1.13",
-    "payment-tokenator": "^0.2.24",
+    "payment-tokenator": "^0.2.25",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^5.3.4",
