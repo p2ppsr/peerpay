@@ -19,7 +19,7 @@ interface Token {
 interface PaymentListProps {
   payments: Payment[]
   onAccept: (payment: Payment) => void
-  onReject: (messageId: string) => void
+  onReject: (payment: Payment) => void
 }
 
 const PaymentList: React.FC<PaymentListProps> = ({ payments, onAccept, onReject }) => {
@@ -38,7 +38,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onAccept, onReject 
             <ListItemText primary={`${payment.token.amount} satoshis`} />
             <ListItemSecondaryAction>
               <Button onClick={() => onAccept(payment)} color='primary'>Accept</Button>
-              <Button onClick={() => onReject(payment.messageId)} color='secondary'>Reject</Button>
+              <Button onClick={() => onReject(payment)} color='secondary'>Reject</Button>
             </ListItemSecondaryAction>
           </ListItem>
         </Box>

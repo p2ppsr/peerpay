@@ -53,8 +53,9 @@ const App: React.FC = () => {
     setPayments([...payments.filter((x) => x.messageId !== payment.messageId)])
   }
 
-  const handleRejectPayment = (id: string) => {
-    // TODO Implement logic to reject payment
+  const handleRejectPayment = async (payment: Payment) => {
+    await paymentTokenator.rejectPayment(payment)
+    setPayments([...payments.filter((x) => x.messageId !== payment.messageId)])
   }
 
   useAsyncEffect(async () => {
