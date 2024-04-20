@@ -11,7 +11,7 @@
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.0",
     "email-tokenator": "^0.1.24",
-    "metanet-identity-react": "^0.1.45",
+    "metanet-identity-react": "^0.1.54",
     "metanet-react-prompt": "^0.1.13",
     "payment-tokenator": "^0.2.25",
     "react": "^18.2.0",
