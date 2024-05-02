@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Container, Typography, Box, LinearProgress } from '@mui/material'
+import { Container, Typography, Box, LinearProgress, TextField, InputAdornment } from '@mui/material'
 import PaymentForm from './components/PaymentForm'
 import PaymentList, { Payment } from './components/PaymentList'
 import PaymentTokenator from 'payment-tokenator'
@@ -18,6 +18,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const theme = useTheme()
   const [isMncMissing, setIsMncMissing] = useState(false)
+  const [preferredCurrency, setPreferredCurrency] = useState('BSV')
 
 
   // Run a 1s interval for checking if MNC is running

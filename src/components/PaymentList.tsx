@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { } from 'react'
 import { List, ListItem, ListItemText, Button, ListItemSecondaryAction, useTheme, Box, Divider } from '@mui/material'
 import { IdentityCard } from 'metanet-identity-react'
+import { AmountDisplay } from 'amountinator-react'
 import constants from '../utils/constants'
 
 export interface Payment {
@@ -35,7 +36,11 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onAccept, onReject 
               identityKey={payment.sender}
               themeMode='dark'
             />
-            <ListItemText primary={`${payment.token.amount} satoshis`} />
+            <ListItemText>
+              <AmountDisplay>
+                {payment.token.amount}
+              </AmountDisplay>
+            </ListItemText>
             <ListItemSecondaryAction>
               <Button onClick={() => onAccept(payment)} color='primary'>Accept</Button>
               <Button onClick={() => onReject(payment)} color='secondary'>Reject</Button>
