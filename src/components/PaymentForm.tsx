@@ -3,7 +3,6 @@ import { TextField, Button, Box, useTheme, InputAdornment } from '@mui/material'
 import { Identity, IdentitySearchField } from 'metanet-identity-react'
 import { toast } from 'react-toastify'
 import constants from '../utils/constants'
-import { AmountDisplay, AmountInputField } from 'amountinator-react'
 import { CurrencyConverter } from 'amountinator'
 import useAsyncEffect from 'use-async-effect'
 
