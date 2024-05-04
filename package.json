@@ -12,7 +12,7 @@
     "@types/node": "^20.11.0",
     "amountinator": "^0.1.13",
     "amountinator-react": "^0.1.9",
-    "email-tokenator": "^0.1.30",
+    "email-tokenator": "^0.1.31",
     "metanet-identity-react": "^0.1.57",
     "metanet-react-prompt": "^0.1.18",
     "payment-tokenator": "^0.2.30",
