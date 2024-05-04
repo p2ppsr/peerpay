@@ -37,8 +37,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onAccept, onReject 
               themeMode='dark'
             />
             <ListItemText>
-              <AmountDisplay>
-                {payment.token.amount}
+              <AmountDisplay paymentAmount={payment.token.amount}>
               </AmountDisplay>
             </ListItemText>
             <ListItemSecondaryAction>
