@@ -5,9 +5,6 @@ import PaymentList, { Payment } from './components/PaymentList'
 import { useTheme } from '@mui/material/styles'
 import { toast } from 'react-toastify'
 import useAsyncEffect from 'use-async-effect'
-import checkForMetaNetClient from './utils/checkForMetaNetClient'
-import NoMncModal from './components/NoMncModal/NoMncModal'
-
 
 import './App.scss'
 import constants from './utils/constants'
@@ -27,25 +24,11 @@ const App: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(false)
   const theme = useTheme()
-  const [isMncMissing, setIsMncMissing] = useState(false)
-
-  // Fix interval check for MNC
-  useAsyncEffect(async () => {
-    const intervalId = setInterval(async () => {
-      const hasMNC = await checkForMetaNetClient()
-      setIsMncMissing(hasMNC === 0)
-    }, 1000)
-
-    return () => clearInterval(intervalId)
-  }, [])
 
   // Fix handleSendPayment to use PeerPayClient
   const handleSendPayment = async (amount: number, recipient: string) => {
     try {
-      await peerPayClient.sendPayment({
-        recipient,
-        amount
-      })
+      await peerPayClient.sendPayment({ recipient, amount })
       toast.success('Payment successfully sent!')
     } catch (error) {
       toast.error('Failed to send payment!')
@@ -64,7 +47,7 @@ const App: React.FC = () => {
         }
       })
       toast.success('Payment accepted!')
-      setPayments(payments.filter((x) => x.messageId !== payment.messageId))
+      setPayments((prevPayments) => prevPayments.filter((x) => x.messageId !== payment.messageId))
     } catch (error) {
       toast.error('Failed to accept payment.')
       console.error('Error accepting payment:', error)
@@ -82,14 +65,14 @@ const App: React.FC = () => {
         }
       })
       toast.info('Payment rejected.')
-      setPayments(payments.filter((x) => x.messageId !== payment.messageId))
+      setPayments((prevPayments) => prevPayments.filter((x) => x.messageId !== payment.messageId))
     } catch (error) {
       toast.error('Failed to reject payment.')
       console.error('Error rejecting payment:', error)
     }
   }
 
-  // Fix `useAsyncEffect` to load incoming payments and listen for live payments
+  // Fetch incoming payments and listen for live payments
   useAsyncEffect(async () => {
     try {
       setLoading(true)
@@ -109,7 +92,7 @@ const App: React.FC = () => {
       // Listen for live payments and ensure `token.transaction` conversion
       await peerPayClient.listenForLivePayments({
         onPayment: (payment: IncomingPayment) => {
-          setLoading(true)
+          console.log('🔔 Received Live Payment:', payment)
 
           const formattedPayment: Payment = {
             ...payment,
@@ -128,12 +111,10 @@ const App: React.FC = () => {
       console.error('Error fetching incoming payments:', error)
     }
     setLoading(false)
-}, [])
-
+  }, [])
 
   return (
     <Container maxWidth='sm'>
-      <NoMncModal open={isMncMissing} onClose={() => setIsMncMissing(false)} />
       <Box
         sx={{
           bgcolor: 'background.default',

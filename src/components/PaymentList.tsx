@@ -1,7 +1,6 @@
 import React from 'react'
 import { List, ListItem, ListItemText, Button, ListItemSecondaryAction, Box, Divider } from '@mui/material'
-import { IdentityCard } from 'metanet-identity-react'
-import constants from '../utils/constants'
+import { IdentityCard } from '@bsv/identity-react' // ✅ Ensure correct package
 import { PeerPayClient, IncomingPayment } from '@bsv/p2p'
 import { WalletClient } from '@bsv/sdk'
 import { toast } from 'react-toastify'
@@ -13,7 +12,7 @@ const peerPayClient = new PeerPayClient({
   walletClient
 })
 
-// Updated Payment interface to match IncomingPayment from peerpay-client
+// **Updated Payment Interface** to match `IncomingPayment`
 export interface Payment {
   messageId: number
   sender: string
@@ -22,41 +21,42 @@ export interface Payment {
       derivationPrefix: string
       derivationSuffix: string
     }
-    transaction: Uint8Array // Ensuring correct AtomicBEEF format
+    transaction: Uint8Array // ✅ Corrected format without extending IncomingPayment
     amount: number
   }
 }
 
-// Function to format satoshis for display
+// **Function to format satoshis for display**
 const formatSatoshis = (satoshis: number): string => {
-  return `${satoshis.toLocaleString()} Sats` // Display with commas for readability
+  return `${satoshis.toLocaleString()} Sats`
 }
 
 interface PaymentListProps {
-  payments: Payment[]
+  payments?: Payment[] // ✅ Default to undefined to prevent crashes
   onAccept: (payment: Payment) => void
   onReject: (payment: Payment) => void
 }
 
-const PaymentList: React.FC<PaymentListProps> = ({ payments, onAccept, onReject }) => {
+const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onAccept, onReject }) => {
   const handleAccept = async (payment: Payment) => {
     try {
       const formattedPayment: IncomingPayment = {
-        ...payment,
+        messageId: payment.messageId,
+        sender: payment.sender,
         token: {
           ...payment.token,
-          transaction: Array.from(payment.token.transaction), // Convert Uint8Array to number[]
+          transaction: Array.from(payment.token.transaction), // ✅ Convert Uint8Array to number[]
         },
       }
-
+  
       await peerPayClient.acceptPayment(formattedPayment)
-      toast.success('Payment accepted!')
+      toast.success('✅ Payment accepted!')
       onAccept(payment)
     } catch (error) {
-      toast.error('Failed to accept payment.')
+      toast.error('❌ Failed to accept payment.')
       console.error('Error accepting payment:', error)
     }
-  }
+  }  
 
   const handleReject = async (payment: Payment) => {
     try {
@@ -69,10 +69,10 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onAccept, onReject 
       }
 
       await peerPayClient.rejectPayment(formattedPayment)
-      toast.info('Payment rejected.')
+      toast.info('❌ Payment rejected.')
       onReject(payment)
     } catch (error) {
-      toast.error('Failed to reject payment.')
+      toast.error('⚠️ Failed to reject payment.')
       console.error('Error rejecting payment:', error)
     }
   }
@@ -83,10 +83,8 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onAccept, onReject 
         <Box key={payment.messageId}>
           <Divider />
           <ListItem>
-            <IdentityCard
-              identityKey={payment.sender}
-              themeMode='dark'
-            />
+            {/* ✅ Ensure correct prop for IdentityCard */}
+            <IdentityCard identityKey={payment.sender} themeMode='dark' />
             <ListItemText>
               {formatSatoshis(payment.token.amount)}
             </ListItemText>
