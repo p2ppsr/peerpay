@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import { TextField, Button, Box, InputAdornment } from '@mui/material'
-import { IdentitySearchField, Identity } from '@bsv/identity-react' // ✅ FIXED
+import { IdentitySearchField, Identity } from '@bsv/identity-react'
 import { toast } from 'react-toastify'
 import constants from '../utils/constants'
 import { PeerPayClient } from '@bsv/p2p'
@@ -20,7 +20,7 @@ interface PaymentFormProps {
 const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
   const [recipient, setRecipient] = useState<Identity | null>(null)
   const [amount, setAmount] = useState('')
-  const [amountInSats, setAmountInSats] = useState(0) // ✅ Default to 0
+  const [amountInSats, setAmountInSats] = useState(0) // Default to 0
   const currencySymbol = 'Sats' // Default to Bitcoin satoshis
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -53,13 +53,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
 
     if (input) {
       const satoshis = Number(input) // Assume user enters satoshis directly
-      setAmountInSats(satoshis || 0) // ✅ Default to 0
+      setAmountInSats(satoshis || 0) // Default to 0
     }
   }, [])
 
   return (
     <Box component='form' onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
-      {/* ✅ FIXED: Use IdentitySearchField */}
       <IdentitySearchField
         confederacyHost={constants.confederacyURL}
         onIdentitySelected={(identity) => setRecipient(identity)}

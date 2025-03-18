@@ -1,6 +1,6 @@
 import React from 'react'
 import { List, ListItem, ListItemText, Button, ListItemSecondaryAction, Box, Divider } from '@mui/material'
-import { IdentityCard } from '@bsv/identity-react' // ✅ Ensure correct package
+import { IdentityCard } from '@bsv/identity-react'
 import { PeerPayClient, IncomingPayment } from '@bsv/p2p'
 import { WalletClient } from '@bsv/sdk'
 import { toast } from 'react-toastify'
@@ -21,7 +21,7 @@ export interface Payment {
       derivationPrefix: string
       derivationSuffix: string
     }
-    transaction: Uint8Array // ✅ Corrected format without extending IncomingPayment
+    transaction: Uint8Array
     amount: number
   }
 }
@@ -32,7 +32,7 @@ const formatSatoshis = (satoshis: number): string => {
 }
 
 interface PaymentListProps {
-  payments?: Payment[] // ✅ Default to undefined to prevent crashes
+  payments?: Payment[] // Default to undefined to prevent crashes
   onAccept: (payment: Payment) => void
   onReject: (payment: Payment) => void
 }
@@ -45,15 +45,15 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onAccept, onRe
         sender: payment.sender,
         token: {
           ...payment.token,
-          transaction: Array.from(payment.token.transaction), // ✅ Convert Uint8Array to number[]
+          transaction: Array.from(payment.token.transaction),
         },
       }
   
       await peerPayClient.acceptPayment(formattedPayment)
-      toast.success('✅ Payment accepted!')
+      toast.success('Payment accepted!')
       onAccept(payment)
     } catch (error) {
-      toast.error('❌ Failed to accept payment.')
+      toast.error('Failed to accept payment.')
       console.error('Error accepting payment:', error)
     }
   }  
@@ -69,10 +69,10 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onAccept, onRe
       }
 
       await peerPayClient.rejectPayment(formattedPayment)
-      toast.info('❌ Payment rejected.')
+      toast.info('Payment rejected.')
       onReject(payment)
     } catch (error) {
-      toast.error('⚠️ Failed to reject payment.')
+      toast.error('Failed to reject payment.')
       console.error('Error rejecting payment:', error)
     }
   }
@@ -83,7 +83,6 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onAccept, onRe
         <Box key={payment.messageId}>
           <Divider />
           <ListItem>
-            {/* ✅ Ensure correct prop for IdentityCard */}
             <IdentityCard identityKey={payment.sender} themeMode='dark' />
             <ListItemText>
               {formatSatoshis(payment.token.amount)}
