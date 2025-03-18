@@ -1,6 +1,6 @@
 interface Constants {
   confederacyURL: string
-  peerservURL: string
+  messageboxURL: string
 }
 
 let constants: Constants
@@ -10,16 +10,16 @@ if (
   || window.location.host.startsWith("staging")
   || process.env.NODE_ENV === "development"
 ) {
-  // local
+  // Local / Staging environment
   constants = {
     confederacyURL: "https://staging-confederacy.babbage.systems",
-    peerservURL: 'https://staging-peerserv.babbage.systems'
+    messageboxURL: 'https://staging-messagebox.babbage.systems'
   }
 } else {
-  // production
+  // Production environment
   constants = {
     confederacyURL: 'https://confederacy.babbage.systems',
-    peerservURL: 'https://peerserv.babbage.systems'
+    messageboxURL: 'https://messagebox.babbage.systems'
   }
 }
 

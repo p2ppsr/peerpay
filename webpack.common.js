@@ -57,7 +57,11 @@ module.exports = {
       }
     ]
   },
-  resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx']
-  }
+    resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
+    alias: {
+      'peerpay-client': path.resolve(__dirname, '../peerpay-client/src/PeerPayClient.js'),
+    },
+  },
+
 }
