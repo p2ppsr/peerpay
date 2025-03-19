@@ -23,27 +23,52 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
   const [amountInSats, setAmountInSats] = useState(0) // Default to 0
   const currencySymbol = 'Sats' // Default to Bitcoin satoshis
 
+  // ✅ Ensure correct identity is stored
+  const handleIdentitySelected = (identity: Identity) => {
+    console.log('🔍 Selected Identity:', identity) // Debugging
+    console.log('🔑 Full Identity Key:', identity.identityKey) // Debugging
+
+    if (identity.identityKey.length < 66) {
+      console.warn('⚠️ Warning: Identity key may be truncated!', identity.identityKey)
+    }
+
+    setRecipient(identity) // Ensure we store the full identity
+  }
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (!recipient || !recipient.identityKey) {
       toast.error('Who should the payment go to?')
       return
-    } else if (!amount || amount === '' || amount === '0') {
+    }
+
+    const finalRecipientKey = recipient.identityKey.trim() // Ensure no spaces
+    console.log('📤 Final Recipient Key (Before Sending):', finalRecipientKey) // Debugging
+
+    if (finalRecipientKey.length !== 66) { 
+      toast.error("Invalid recipient key detected!")
+      console.error('🚨 Truncated Identity Key:', finalRecipientKey)
+      return
+    }
+
+    if (!amount || amount === '' || amount === '0') {
       toast.error('How much do you want to send?')
       return
     }
 
     try {
       // Use PeerPayClient to send the payment
-      await peerPayClient.sendPayment({ recipient: recipient.identityKey, amount: amountInSats })
+      console.log('🚀 Sending Payment:', { recipient: finalRecipientKey, amount: amountInSats })
+
+      await peerPayClient.sendPayment({ recipient: finalRecipientKey, amount: amountInSats })
       toast.success('Payment sent successfully!')
 
-      onSend(amountInSats, recipient.identityKey)
+      onSend(amountInSats, finalRecipientKey)
       setAmount('')
     } catch (error) {
       toast.error('Error sending payment.')
-      console.error('Payment error:', error)
+      console.error('🚨 Payment error:', error)
     }
   }
 
@@ -61,7 +86,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
     <Box component='form' onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
       <IdentitySearchField
         confederacyHost={constants.confederacyURL}
-        onIdentitySelected={(identity) => setRecipient(identity)}
+        onIdentitySelected={handleIdentitySelected}
         appName='PeerPay'
       />
       <TextField

@@ -33,11 +33,9 @@ const formatSatoshis = (satoshis: number): string => {
 
 interface PaymentListProps {
   payments?: Payment[] // Default to undefined to prevent crashes
-  onAccept: (payment: Payment) => void
-  onReject: (payment: Payment) => void
 }
 
-const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onAccept, onReject }) => {
+const PaymentList: React.FC<PaymentListProps> = ({ payments = [] }) => {
   const handleAccept = async (payment: Payment) => {
     try {
       const formattedPayment: IncomingPayment = {
@@ -51,7 +49,6 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onAccept, onRe
   
       await peerPayClient.acceptPayment(formattedPayment)
       toast.success('Payment accepted!')
-      onAccept(payment)
     } catch (error) {
       toast.error('Failed to accept payment.')
       console.error('Error accepting payment:', error)
@@ -70,7 +67,6 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onAccept, onRe
 
       await peerPayClient.rejectPayment(formattedPayment)
       toast.info('Payment rejected.')
-      onReject(payment)
     } catch (error) {
       toast.error('Failed to reject payment.')
       console.error('Error rejecting payment:', error)
