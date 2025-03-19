@@ -4,7 +4,7 @@ declare module 'peerpay-client' {
         derivationPrefix: string;
         derivationSuffix: string;
       };
-      transaction: number[]; // Ensure it's number[] for compatibility
+      transaction: number[];
       amount: number;
     };
   

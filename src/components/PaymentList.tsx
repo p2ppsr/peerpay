@@ -12,7 +12,7 @@ const peerPayClient = new PeerPayClient({
   walletClient
 })
 
-// **Updated Payment Interface** to match `IncomingPayment`
+// Define Payment interface
 export interface Payment {
   messageId: number
   sender: string
@@ -26,16 +26,17 @@ export interface Payment {
   }
 }
 
-// **Function to format satoshis for display**
+// Function to format satoshis for display
 const formatSatoshis = (satoshis: number): string => {
   return `${satoshis.toLocaleString()} Sats`
 }
 
 interface PaymentListProps {
   payments?: Payment[] // Default to undefined to prevent crashes
+  onUpdatePayments: () => void // Function to refresh payment list
 }
 
-const PaymentList: React.FC<PaymentListProps> = ({ payments = [] }) => {
+const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePayments }) => {
   const handleAccept = async (payment: Payment) => {
     try {
       const formattedPayment: IncomingPayment = {
@@ -46,14 +47,15 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [] }) => {
           transaction: Array.from(payment.token.transaction),
         },
       }
-  
+
       await peerPayClient.acceptPayment(formattedPayment)
       toast.success('Payment accepted!')
+      onUpdatePayments() // Refresh payment list
     } catch (error) {
       toast.error('Failed to accept payment.')
       console.error('Error accepting payment:', error)
     }
-  }  
+  }
 
   const handleReject = async (payment: Payment) => {
     try {
@@ -67,6 +69,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [] }) => {
 
       await peerPayClient.rejectPayment(formattedPayment)
       toast.info('Payment rejected.')
+      onUpdatePayments() // Refresh payment list
     } catch (error) {
       toast.error('Failed to reject payment.')
       console.error('Error rejecting payment:', error)

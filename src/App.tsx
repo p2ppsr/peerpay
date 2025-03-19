@@ -1,15 +1,14 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Container, Typography, Box, LinearProgress } from '@mui/material'
 import PaymentForm from './components/PaymentForm'
 import PaymentList, { Payment } from './components/PaymentList'
 import { useTheme } from '@mui/material/styles'
-import { toast } from 'react-toastify'
-import useAsyncEffect from 'use-async-effect'
+
 
 import './App.scss'
-import constants from './utils/constants'
 
-// Import PeerPayClient instead of PaymentTokenator
+
+// Import PeerPayClient
 import { PeerPayClient, IncomingPayment } from '@bsv/p2p'
 import { WalletClient } from '@bsv/sdk'
 
@@ -25,92 +24,58 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const theme = useTheme()
 
-  // Fix handleSendPayment to use PeerPayClient
-  // const handleSendPayment = async (amount: number, recipient: string) => {
-  //   try {
-  //     await peerPayClient.sendPayment({ recipient, amount })
-  //     toast.success('Payment successfully sent!')
-  //   } catch (error) {
-  //     toast.error('Failed to send payment!')
-  //     console.error('Error sending payment:', error)
-  //   }
-  // }
-
-  // Fix handleAcceptPayment to use PeerPayClient
-  // const handleAcceptPayment = async (payment: Payment) => {
-  //   try {
-  //     await peerPayClient.acceptPayment({
-  //       ...payment,
-  //       token: {
-  //         ...payment.token,
-  //         transaction: Array.from(payment.token.transaction) // Convert Uint8Array to number[]
-  //       }
-  //     })
-  //     toast.success('Payment accepted!')
-  //     setPayments((prevPayments) => prevPayments.filter((x) => x.messageId !== payment.messageId))
-  //   } catch (error) {
-  //     toast.error('Failed to accept payment.')
-  //     console.error('Error accepting payment:', error)
-  //   }
-  // }
-
-  // Fix handleRejectPayment to use PeerPayClient
-  // const handleRejectPayment = async (payment: Payment) => {
-  //   try {
-  //     await peerPayClient.rejectPayment({
-  //       ...payment,
-  //       token: {
-  //         ...payment.token,
-  //         transaction: Array.from(payment.token.transaction)
-  //       }
-  //     })
-  //     toast.info('Payment rejected.')
-  //     setPayments((prevPayments) => prevPayments.filter((x) => x.messageId !== payment.messageId))
-  //   } catch (error) {
-  //     toast.error('Failed to reject payment.')
-  //     console.error('Error rejecting payment:', error)
-  //   }
-  // }
-
-  // Fetch incoming payments and listen for live payments
-  useAsyncEffect(async () => {
+  // Function to fetch payments
+  const fetchPayments = async () => {
     try {
       setLoading(true)
-
-      // Fetch payments and convert `token.transaction` to Uint8Array
       const paymentsToReceive = await peerPayClient.listIncomingPayments()
+
       const formattedPayments: Payment[] = paymentsToReceive.map((payment) => ({
         ...payment,
         token: {
           ...payment.token,
-          transaction: new Uint8Array(payment.token.transaction) // Convert number[] to Uint8Array
+          transaction: new Uint8Array(payment.token.transaction)
         }
       }))
 
-      setPayments(formattedPayments) // Now matches `Payment[]`
-
-      // Listen for live payments and ensure `token.transaction` conversion
-      await peerPayClient.listenForLivePayments({
-        onPayment: (payment: IncomingPayment) => {
-          console.log('🔔 Received Live Payment:', payment)
-
-          const formattedPayment: Payment = {
-            ...payment,
-            token: {
-              ...payment.token,
-              transaction: new Uint8Array(payment.token.transaction) // Convert number[] to Uint8Array
-            }
-          }
-
-          setPayments((prevPayments) => [...prevPayments, formattedPayment])
-          setLoading(false)
-        }
-      })
-
+      setPayments(formattedPayments)
     } catch (error) {
       console.error('Error fetching incoming payments:', error)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
+  }
+
+  // Load initial payments
+  useEffect(() => {
+    fetchPayments()
+  }, [])
+
+  // Listen for live payments
+  useEffect(() => {
+    const listenForPayments = async () => {
+      try {
+        await peerPayClient.listenForLivePayments({
+          onPayment: (payment: IncomingPayment) => {
+            console.log('🔔 Received Live Payment:', payment)
+
+            const formattedPayment: Payment = {
+              ...payment,
+              token: {
+                ...payment.token,
+                transaction: new Uint8Array(payment.token.transaction)
+              }
+            }
+
+            setPayments((prevPayments) => [...prevPayments, formattedPayment])
+          }
+        })
+      } catch (error) {
+        console.error('Error listening for live payments:', error)
+      }
+    }
+
+    listenForPayments()
   }, [])
 
   return (
@@ -136,13 +101,14 @@ const App: React.FC = () => {
           <Typography variant='body1' paddingTop={5}>
             Simple Peer-to-peer Payments
           </Typography>
-          <PaymentForm onSend={(amount, recipient) => { }} />
+          <PaymentForm onSend={fetchPayments} />
         </Box>
+
         <Typography variant='h6' component='h2' paddingTop={5}>
           Incoming Payments
         </Typography>
         {loading && <LinearProgress />}
-        <PaymentList payments={payments} />
+        <PaymentList payments={payments} onUpdatePayments={fetchPayments} />
       </Box>
     </Container>
   )

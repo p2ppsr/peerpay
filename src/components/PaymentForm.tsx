@@ -23,29 +23,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
   const [amountInSats, setAmountInSats] = useState(0) // Default to 0
   const currencySymbol = 'Sats' // Default to Bitcoin satoshis
 
-  // ✅ Ensure correct identity is stored
+  // Store identity
   const handleIdentitySelected = (identity: Identity) => {
-    console.log('🔍 Selected Identity:', identity);
-    console.log('🔑 Full Identity Key:', identity.identityKey);
-  
-    // Workaround: Check if the key is truncated (too short)
-    if (identity.identityKey.length < 66) {
-      console.warn('⚠️ Warning: Identity key may be truncated!', identity.identityKey);
-      
-      const manualKey = prompt("The selected key appears truncated. Please enter the full identity key:", identity.identityKey);
-      
-      if (manualKey && manualKey.length === 66) {
-        identity.identityKey = manualKey.trim(); // Use manually entered key
-        console.log('✅ Manually Corrected Identity Key:', identity.identityKey);
-      } else {
-        toast.error('Invalid identity key entered. Please enter a valid 66-character key.');
-        return;
-      }
-    }
-  
-    setRecipient(identity); // Store the corrected full identity
-  };
-  
+    console.log('Selected Identity:', identity)
+    console.log('Full Identity Key:', identity.identityKey)
+
+    setRecipient(identity) // Store the full identity directly
+  }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -56,11 +40,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
     }
 
     const finalRecipientKey = recipient.identityKey.trim() // Ensure no spaces
-    console.log('📤 Final Recipient Key (Before Sending):', finalRecipientKey) // Debugging
+    console.log('Final Recipient Key (Before Sending):', finalRecipientKey)
 
     if (finalRecipientKey.length !== 66) { 
-      toast.error("Invalid recipient key detected!")
-      console.error('🚨 Truncated Identity Key:', finalRecipientKey)
+      toast.error('Invalid recipient key detected!')
+      console.error('Truncated Identity Key:', finalRecipientKey)
       return
     }
 
@@ -71,7 +55,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
 
     try {
       // Use PeerPayClient to send the payment
-      console.log('🚀 Sending Payment:', { recipient: finalRecipientKey, amount: amountInSats })
+      console.log('Sending Payment:', { recipient: finalRecipientKey, amount: amountInSats })
 
       await peerPayClient.sendPayment({ recipient: finalRecipientKey, amount: amountInSats })
       toast.success('Payment sent successfully!')
@@ -80,7 +64,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
       setAmount('')
     } catch (error) {
       toast.error('Error sending payment.')
-      console.error('🚨 Payment error:', error)
+      console.error('Payment error:', error)
     }
   }
 
