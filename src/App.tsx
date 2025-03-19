@@ -55,22 +55,22 @@ const App: React.FC = () => {
   // }
 
   // Fix handleRejectPayment to use PeerPayClient
-  const handleRejectPayment = async (payment: Payment) => {
-    try {
-      await peerPayClient.rejectPayment({
-        ...payment,
-        token: {
-          ...payment.token,
-          transaction: Array.from(payment.token.transaction)
-        }
-      })
-      toast.info('Payment rejected.')
-      setPayments((prevPayments) => prevPayments.filter((x) => x.messageId !== payment.messageId))
-    } catch (error) {
-      toast.error('Failed to reject payment.')
-      console.error('Error rejecting payment:', error)
-    }
-  }
+  // const handleRejectPayment = async (payment: Payment) => {
+  //   try {
+  //     await peerPayClient.rejectPayment({
+  //       ...payment,
+  //       token: {
+  //         ...payment.token,
+  //         transaction: Array.from(payment.token.transaction)
+  //       }
+  //     })
+  //     toast.info('Payment rejected.')
+  //     setPayments((prevPayments) => prevPayments.filter((x) => x.messageId !== payment.messageId))
+  //   } catch (error) {
+  //     toast.error('Failed to reject payment.')
+  //     console.error('Error rejecting payment:', error)
+  //   }
+  // }
 
   // Fetch incoming payments and listen for live payments
   useAsyncEffect(async () => {

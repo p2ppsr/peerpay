@@ -25,15 +25,27 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
 
   // ✅ Ensure correct identity is stored
   const handleIdentitySelected = (identity: Identity) => {
-    console.log('🔍 Selected Identity:', identity) // Debugging
-    console.log('🔑 Full Identity Key:', identity.identityKey) // Debugging
-
+    console.log('🔍 Selected Identity:', identity);
+    console.log('🔑 Full Identity Key:', identity.identityKey);
+  
+    // Workaround: Check if the key is truncated (too short)
     if (identity.identityKey.length < 66) {
-      console.warn('⚠️ Warning: Identity key may be truncated!', identity.identityKey)
+      console.warn('⚠️ Warning: Identity key may be truncated!', identity.identityKey);
+      
+      const manualKey = prompt("The selected key appears truncated. Please enter the full identity key:", identity.identityKey);
+      
+      if (manualKey && manualKey.length === 66) {
+        identity.identityKey = manualKey.trim(); // Use manually entered key
+        console.log('✅ Manually Corrected Identity Key:', identity.identityKey);
+      } else {
+        toast.error('Invalid identity key entered. Please enter a valid 66-character key.');
+        return;
+      }
     }
-
-    setRecipient(identity) // Ensure we store the full identity
-  }
+  
+    setRecipient(identity); // Store the corrected full identity
+  };
+  
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
