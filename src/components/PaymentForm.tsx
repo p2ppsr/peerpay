@@ -57,7 +57,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
       // Use PeerPayClient to send the payment
       console.log('Sending Payment:', { recipient: finalRecipientKey, amount: amountInSats })
 
-      await peerPayClient.sendPayment({ recipient: finalRecipientKey, amount: amountInSats })
+      await peerPayClient.sendLivePayment({ recipient: finalRecipientKey, amount: amountInSats })
       toast.success('Payment sent successfully!')
 
       onSend(amountInSats, finalRecipientKey)

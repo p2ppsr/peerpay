@@ -4,9 +4,7 @@ import PaymentForm from './components/PaymentForm'
 import PaymentList, { Payment } from './components/PaymentList'
 import { useTheme } from '@mui/material/styles'
 
-
 import './App.scss'
-
 
 // Import PeerPayClient
 import { PeerPayClient, IncomingPayment } from '@bsv/p2p'
@@ -57,7 +55,7 @@ const App: React.FC = () => {
       try {
         await peerPayClient.listenForLivePayments({
           onPayment: (payment: IncomingPayment) => {
-            console.log('🔔 Received Live Payment:', payment)
+            console.log('Received Live Payment:', payment)
 
             const formattedPayment: Payment = {
               ...payment,
