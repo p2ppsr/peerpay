@@ -4,7 +4,6 @@
   "version": "0.1.51",
   "private": true,
   "dependencies": {
-    "@babbage/sdk-ts": "^0.2.75",
     "@bsv/identity-react": "^1.0.6",
     "@bsv/p2p": "^1.0.9",
     "@bsv/sdk": "^1.4.3",
@@ -14,9 +13,7 @@
     "@mui/material": "^5.13.6",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.0",
-    "latest": "^0.2.0",
     "metanet-react-prompt": "^0.1.31",
-    "payment-tokenator": "^0.2.40",
     "peerpay-client": "file:../peerpay-client",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
