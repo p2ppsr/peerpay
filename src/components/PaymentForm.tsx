@@ -3,7 +3,7 @@ import { TextField, Button, Box, InputAdornment } from '@mui/material'
 import { IdentitySearchField, Identity } from '@bsv/identity-react'
 import { toast } from 'react-toastify'
 import constants from '../utils/constants'
-import { PeerPayClient } from '@bsv/p2p'
+import { PeerPayClient } from '../../../messagebox-client/dist/esm/src/PeerPayClient.js'
 import { WalletClient } from '@bsv/sdk'
 
 // Initialize PeerPayClient
