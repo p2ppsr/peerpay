@@ -1,12 +1,12 @@
 # PeerPay
 
-Simple P2P payments on the MetaNet
+Simple P2P payments on the Metanet
 
 ## Development Instructions
 
 Clone the repo, then run `npm i` to install packages.
 
-To start the live development server on `localhost:8088`, run `npm run start`.
+To start the live development server on `localhost:8088`, run `npm run dev`.
 
 Your browser should automatically open, and your changes should be reflected on-screen whenever you reload.
 
