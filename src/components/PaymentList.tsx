@@ -9,7 +9,7 @@ import { IncomingPayment } from '@bsv/p2p'
 // Initialize PeerPayClient
 const walletClient = new WalletClient('json-api', 'non-admin.com')
 const peerPayClient = new PeerPayClient({
-  messageBoxHost: 'https://messagebox.babbage.systems',
+  messageBoxHost: 'http://localhost:8080',
   walletClient
 })
 
