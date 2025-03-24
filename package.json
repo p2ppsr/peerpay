@@ -2,6 +2,7 @@
   "name": "peerpay-react",
   "description": "Peer-to-peer payments.",
   "version": "0.1.51",
+  "type": "module",
   "private": true,
   "dependencies": {
     "@bsv/identity-react": "^1.0.7",
