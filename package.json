@@ -6,7 +6,7 @@
   "dependencies": {
     "@babbage/sdk-ts": "^0.2.75",
     "@bsv/identity-react": "^1.0.6",
-    "@bsv/p2p": "^1.0.10",
+    "@bsv/p2p": "^1.0.11",
     "@bsv/sdk": "^1.4.3",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",

@@ -3,13 +3,13 @@ import { TextField, Button, Box, InputAdornment } from '@mui/material'
 import { IdentitySearchField, Identity } from '@bsv/identity-react'
 import { toast } from 'react-toastify'
 import constants from '../utils/constants'
-import { PeerPayClient } from '../../../messagebox-client/dist/esm/src/PeerPayClient.js'
+import { PeerPayClient } from '@bsv/p2p'
 import { WalletClient } from '@bsv/sdk'
 
 // Initialize PeerPayClient
 const walletClient = new WalletClient('json-api', 'non-admin.com')
 const peerPayClient = new PeerPayClient({
-  messageBoxHost: 'http://localhost:8080',
+  messageBoxHost: 'https://messagebox.babbage.systems',
   walletClient
 })
 

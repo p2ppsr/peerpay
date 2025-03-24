@@ -7,14 +7,13 @@ import { useTheme } from '@mui/material/styles'
 import './App.scss'
 
 // Import PeerPayClient
-import { PeerPayClient } from '../../messagebox-client/dist/esm/src/PeerPayClient.js'
-import { IncomingPayment } from '@bsv/p2p'
+import { PeerPayClient, IncomingPayment } from '@bsv/p2p'
 import { WalletClient } from '@bsv/sdk'
 
 // Initialize PeerPayClient
 const walletClient = new WalletClient('json-api', 'non-admin.com')
 const peerPayClient = new PeerPayClient({
-  messageBoxHost: 'http://localhost:8080',
+  messageBoxHost: 'https://messagebox.babbage.systems',
   walletClient,
   enableLogging: true
 })
