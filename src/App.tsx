@@ -25,11 +25,9 @@ const App: React.FC = () => {
 
   // Function to fetch payments
 const fetchPayments = async () => {
-  console.log('[APP] fetchPayments() triggered')
   try {
     setLoading(true)
     const paymentsToReceive = await peerPayClient.listIncomingPayments()
-    console.log('[APP] Payments fetched from listIncomingPayments:', paymentsToReceive)
 
     const formattedPayments: Payment[] = paymentsToReceive.map((payment) => ({
       ...payment,
@@ -39,36 +37,28 @@ const fetchPayments = async () => {
       }
     }))
 
-    console.log('[APP] Formatted payments:', formattedPayments)
     setPayments(formattedPayments)
   } catch (error) {
     console.error('[APP] Error fetching incoming payments:', error)
   } finally {
     setLoading(false)
-    console.log('[APP] Done loading payments')
   }
 }
 
 // Load initial payments
 useEffect(() => {
-  console.log('[APP] useEffect() for initial fetchPayments triggered')
   fetchPayments()
 }, [])
 
 // Listen for live payments
 useEffect(() => {
-  console.log('[APP] useEffect() for listenForLivePayments triggered')
 
   const listenForPayments = async () => {
     try {
-      console.log('[APP] Initializing connection...')
       await peerPayClient.initializeConnection()
-      console.log('[APP] Connection initialized. Listening for live payments...')
 
       await peerPayClient.listenForLivePayments({
         onPayment: (payment: IncomingPayment) => {
-          console.log('[APP] onPayment callback triggered!')
-          console.log('[APP] Raw IncomingPayment received:', payment)
 
           const formattedPayment: Payment = {
             ...payment,
@@ -78,15 +68,11 @@ useEffect(() => {
             }
           }
 
-          console.log('[APP] Formatted IncomingPayment:', formattedPayment)
-
           setPayments((prevPayments) => {
             const updated = [...prevPayments, formattedPayment]
-            console.log('[APP] Updated payments list after live payment:', updated)
             return updated
           })
 
-          console.log('[APP] Optionally re-fetching list to verify message is still available...')
           fetchPayments()
         }
       })
