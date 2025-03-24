@@ -25,8 +25,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
 
   // Store identity
   const handleIdentitySelected = (identity: Identity) => {
-    console.log('Selected Identity:', identity)
-    console.log('Full Identity Key:', identity.identityKey)
 
     setRecipient(identity) // Store the full identity directly
   }
@@ -40,7 +38,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
     }
 
     const finalRecipientKey = recipient.identityKey.trim() // Ensure no spaces
-    console.log('Final Recipient Key (Before Sending):', finalRecipientKey)
 
     if (finalRecipientKey.length !== 66) { 
       toast.error('Invalid recipient key detected!')
@@ -55,9 +52,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
 
     try {
       // Use PeerPayClient to send the payment
-      console.log('Sending Payment:', { recipient: finalRecipientKey, amount: amountInSats })
 
-      await peerPayClient.sendPayment({ recipient: finalRecipientKey, amount: amountInSats })
+      await peerPayClient.sendLivePayment({ recipient: finalRecipientKey, amount: amountInSats })
       toast.success('Payment sent successfully!')
 
       onSend(amountInSats, finalRecipientKey)

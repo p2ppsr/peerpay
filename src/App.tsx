@@ -4,9 +4,7 @@ import PaymentForm from './components/PaymentForm'
 import PaymentList, { Payment } from './components/PaymentList'
 import { useTheme } from '@mui/material/styles'
 
-
 import './App.scss'
-
 
 // Import PeerPayClient
 import { PeerPayClient, IncomingPayment } from '@bsv/p2p'
@@ -16,7 +14,8 @@ import { WalletClient } from '@bsv/sdk'
 const walletClient = new WalletClient('json-api', 'non-admin.com')
 const peerPayClient = new PeerPayClient({
   messageBoxHost: 'https://messagebox.babbage.systems',
-  walletClient
+  walletClient,
+  enableLogging: true
 })
 
 const App: React.FC = () => {
@@ -25,58 +24,66 @@ const App: React.FC = () => {
   const theme = useTheme()
 
   // Function to fetch payments
-  const fetchPayments = async () => {
+const fetchPayments = async () => {
+  try {
+    setLoading(true)
+    const paymentsToReceive = await peerPayClient.listIncomingPayments()
+
+    const formattedPayments: Payment[] = paymentsToReceive.map((payment) => ({
+      ...payment,
+      token: {
+        ...payment.token,
+        transaction: new Uint8Array(payment.token.transaction)
+      }
+    }))
+
+    setPayments(formattedPayments)
+  } catch (error) {
+    console.error('[APP] Error fetching incoming payments:', error)
+  } finally {
+    setLoading(false)
+  }
+}
+
+// Load initial payments
+useEffect(() => {
+  fetchPayments()
+}, [])
+
+// Listen for live payments
+useEffect(() => {
+
+  const listenForPayments = async () => {
     try {
-      setLoading(true)
-      const paymentsToReceive = await peerPayClient.listIncomingPayments()
+      await peerPayClient.initializeConnection()
 
-      const formattedPayments: Payment[] = paymentsToReceive.map((payment) => ({
-        ...payment,
-        token: {
-          ...payment.token,
-          transaction: new Uint8Array(payment.token.transaction)
+      await peerPayClient.listenForLivePayments({
+        onPayment: (payment: IncomingPayment) => {
+
+          const formattedPayment: Payment = {
+            ...payment,
+            token: {
+              ...payment.token,
+              transaction: new Uint8Array(payment.token.transaction)
+            }
+          }
+
+          setPayments((prevPayments) => {
+            const updated = [...prevPayments, formattedPayment]
+            return updated
+          })
+
+          fetchPayments()
         }
-      }))
-
-      setPayments(formattedPayments)
+      })
     } catch (error) {
-      console.error('Error fetching incoming payments:', error)
-    } finally {
-      setLoading(false)
+      console.error('[APP] Error listening for live payments:', error)
     }
   }
 
-  // Load initial payments
-  useEffect(() => {
-    fetchPayments()
-  }, [])
+  listenForPayments()
+}, [])
 
-  // Listen for live payments
-  useEffect(() => {
-    const listenForPayments = async () => {
-      try {
-        await peerPayClient.listenForLivePayments({
-          onPayment: (payment: IncomingPayment) => {
-            console.log('🔔 Received Live Payment:', payment)
-
-            const formattedPayment: Payment = {
-              ...payment,
-              token: {
-                ...payment.token,
-                transaction: new Uint8Array(payment.token.transaction)
-              }
-            }
-
-            setPayments((prevPayments) => [...prevPayments, formattedPayment])
-          }
-        })
-      } catch (error) {
-        console.error('Error listening for live payments:', error)
-      }
-    }
-
-    listenForPayments()
-  }, [])
 
   return (
     <Container maxWidth='sm'>

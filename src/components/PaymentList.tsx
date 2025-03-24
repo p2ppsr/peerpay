@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, ListItem, ListItemText, Button, ListItemSecondaryAction, Box, Divider } from '@mui/material'
+import { List, ListItem, ListItemText, Button, ListItemSecondaryAction, Box, Divider, Typography } from '@mui/material'
 import { IdentityCard } from '@bsv/identity-react'
 import { PeerPayClient, IncomingPayment } from '@bsv/p2p'
 import { WalletClient } from '@bsv/sdk'
@@ -81,15 +81,28 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
       {payments.map((payment) => (
         <Box key={payment.messageId}>
           <Divider />
-          <ListItem>
-            <IdentityCard identityKey={payment.sender} themeMode='dark' />
-            <ListItemText>
-              {formatSatoshis(payment.token.amount)}
-            </ListItemText>
-            <ListItemSecondaryAction>
-              <Button onClick={() => handleAccept(payment)} color='primary'>Accept</Button>
-              <Button onClick={() => handleReject(payment)} color='secondary'>Reject</Button>
-            </ListItemSecondaryAction>
+          <ListItem sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+
+            {/* Sender Identity (Left Side) */}
+            <Box sx={{ display: 'flex', alignItems: 'center', minWidth: '345px', flexShrink: 0 }}>
+              <IdentityCard identityKey={payment.sender} themeMode="dark" />
+            </Box>
+
+            {/* Payment Amount (Move Further Right) */}
+            <Box sx={{ flexShrink: 0, minWidth: '120px', textAlign: 'right', marginLeft: '50px' }}>
+              <Typography variant="h6">{formatSatoshis(payment.token.amount)}</Typography>
+            </Box>
+
+            {/* Accept & Reject Buttons (Move to the Far Right) */}
+            <Box sx={{ flexShrink: 0, display: 'flex', gap: 2, marginLeft: '50px' }}>
+              <Button onClick={() => handleAccept(payment)} color="primary" variant="contained" size="small">
+                Accept
+              </Button>
+              <Button onClick={() => handleReject(payment)} color="secondary" variant="outlined" size="small">
+                Reject
+              </Button>
+            </Box>
+
           </ListItem>
         </Box>
       ))}

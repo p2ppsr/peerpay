@@ -5,7 +5,7 @@
   "private": true,
   "dependencies": {
     "@bsv/identity-react": "^1.0.6",
-    "@bsv/p2p": "^1.0.9",
+    "@bsv/p2p": "^1.0.11",
     "@bsv/sdk": "^1.4.3",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
@@ -13,8 +13,8 @@
     "@mui/material": "^5.13.6",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.0",
+    "latest": "^0.2.0",
     "metanet-react-prompt": "^0.1.31",
-    "peerpay-client": "file:../peerpay-client",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^5.3.4",
