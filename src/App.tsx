@@ -3,6 +3,7 @@ import { Container, Typography, Box, LinearProgress } from '@mui/material'
 import PaymentForm from './components/PaymentForm'
 import PaymentList, { Payment } from './components/PaymentList'
 import { useTheme } from '@mui/material/styles'
+import { checkForMetaNetClient, NoMncModal } from 'metanet-react-prompt'
 
 import './App.scss'
 
@@ -10,6 +11,7 @@ import './App.scss'
 import { PeerPayClient, IncomingPayment } from '@bsv/p2p'
 import { WalletClient } from '@bsv/sdk'
 import constants from './utils/constants'
+import useAsyncEffect from 'use-async-effect'
 
 // Initialize PeerPayClient
 const walletClient = new WalletClient('json-api', 'non-admin.com')
@@ -22,7 +24,25 @@ const peerPayClient = new PeerPayClient({
 const App: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(false)
+  const [isMncMissing, setIsMncMissing] = useState<boolean>(false)
   const theme = useTheme()
+
+  // Run a 1s interval for checking if MNC is running
+  useAsyncEffect(async () => {
+    const intervalId = setInterval(async () => {
+      const hasMNC = await checkForMetaNetClient()
+      if (hasMNC === 0) {
+        setIsMncMissing(true) // Open modal if MNC is not found
+      } else {
+        clearInterval(intervalId)
+        setIsMncMissing(false) // Ensure modal is closed if MNC is found
+      }
+    }, 1000)
+
+    return () => {
+      clearInterval(intervalId)
+    }
+  }, [])
 
   // Function to fetch payments
   const fetchPayments = async () => {
@@ -88,6 +108,7 @@ const App: React.FC = () => {
 
   return (
     <Container maxWidth='sm'>
+      <NoMncModal appName={'PeerPay'} open={isMncMissing} onClose={() => setIsMncMissing(false)} />
       <Box
         sx={{
           bgcolor: 'background.default',
