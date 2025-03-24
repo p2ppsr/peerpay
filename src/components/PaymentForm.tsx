@@ -9,7 +9,7 @@ import { WalletClient } from '@bsv/sdk'
 // Initialize PeerPayClient
 const walletClient = new WalletClient('json-api', 'non-admin.com')
 const peerPayClient = new PeerPayClient({
-  messageBoxHost: 'https://messagebox.babbage.systems',
+  messageBoxHost: constants.messageboxURL,
   walletClient
 })
 
@@ -39,7 +39,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
 
     const finalRecipientKey = recipient.identityKey.trim() // Ensure no spaces
 
-    if (finalRecipientKey.length !== 66) { 
+    if (finalRecipientKey.length !== 66) {
       toast.error('Invalid recipient key detected!')
       console.error('Truncated Identity Key:', finalRecipientKey)
       return
@@ -77,7 +77,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
   return (
     <Box component='form' onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
       <IdentitySearchField
-        confederacyHost={constants.confederacyURL}
         onIdentitySelected={handleIdentitySelected}
         appName='PeerPay'
       />

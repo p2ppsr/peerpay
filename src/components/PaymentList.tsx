@@ -1,14 +1,15 @@
 import React from 'react'
-import { List, ListItem, ListItemText, Button, ListItemSecondaryAction, Box, Divider, Typography } from '@mui/material'
+import { List, ListItem, Button, Box, Divider, Typography } from '@mui/material'
 import { IdentityCard } from '@bsv/identity-react'
 import { PeerPayClient, IncomingPayment } from '@bsv/p2p'
 import { WalletClient } from '@bsv/sdk'
 import { toast } from 'react-toastify'
+import constants from '../utils/constants'
 
 // Initialize PeerPayClient
 const walletClient = new WalletClient('json-api', 'non-admin.com')
 const peerPayClient = new PeerPayClient({
-  messageBoxHost: 'https://messagebox.babbage.systems',
+  messageBoxHost: constants.messageboxURL,
   walletClient
 })
 
