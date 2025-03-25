@@ -5,9 +5,9 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@bsv/identity-react": "^1.0.7",
+    "@bsv/identity-react": "^1.0.8",
     "@bsv/p2p": "^1.0.11",
-    "@bsv/sdk": "^1.4.9",
+    "@bsv/sdk": "^1.4.11",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.11.16",
