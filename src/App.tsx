@@ -3,17 +3,20 @@ import { Container, Typography, Box, LinearProgress } from '@mui/material'
 import PaymentForm from './components/PaymentForm'
 import PaymentList, { Payment } from './components/PaymentList'
 import { useTheme } from '@mui/material/styles'
+import { checkForMetaNetClient, NoMncModal } from 'metanet-react-prompt'
 
 import './App.scss'
 
 // Import PeerPayClient
 import { PeerPayClient, IncomingPayment } from '@bsv/p2p'
 import { WalletClient } from '@bsv/sdk'
+import constants from './utils/constants'
+import useAsyncEffect from 'use-async-effect'
 
 // Initialize PeerPayClient
 const walletClient = new WalletClient('json-api', 'non-admin.com')
 const peerPayClient = new PeerPayClient({
-  messageBoxHost: 'https://messagebox.babbage.systems',
+  messageBoxHost: constants.messageboxURL,
   walletClient,
   enableLogging: true
 })
@@ -21,72 +24,91 @@ const peerPayClient = new PeerPayClient({
 const App: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(false)
+  const [isMncMissing, setIsMncMissing] = useState<boolean>(false)
   const theme = useTheme()
 
-  // Function to fetch payments
-const fetchPayments = async () => {
-  try {
-    setLoading(true)
-    const paymentsToReceive = await peerPayClient.listIncomingPayments()
-
-    const formattedPayments: Payment[] = paymentsToReceive.map((payment) => ({
-      ...payment,
-      token: {
-        ...payment.token,
-        transaction: new Uint8Array(payment.token.transaction)
+  // Run a 1s interval for checking if MNC is running
+  useAsyncEffect(async () => {
+    const intervalId = setInterval(async () => {
+      const hasMNC = await checkForMetaNetClient()
+      if (hasMNC === 0) {
+        setIsMncMissing(true) // Open modal if MNC is not found
+      } else {
+        clearInterval(intervalId)
+        setIsMncMissing(false) // Ensure modal is closed if MNC is found
       }
-    }))
+    }, 1000)
 
-    setPayments(formattedPayments)
-  } catch (error) {
-    console.error('[APP] Error fetching incoming payments:', error)
-  } finally {
-    setLoading(false)
-  }
-}
+    return () => {
+      clearInterval(intervalId)
+    }
+  }, [])
 
-// Load initial payments
-useEffect(() => {
-  fetchPayments()
-}, [])
-
-// Listen for live payments
-useEffect(() => {
-
-  const listenForPayments = async () => {
+  // Function to fetch payments
+  const fetchPayments = async () => {
     try {
-      await peerPayClient.initializeConnection()
+      setLoading(true)
+      const paymentsToReceive = await peerPayClient.listIncomingPayments()
 
-      await peerPayClient.listenForLivePayments({
-        onPayment: (payment: IncomingPayment) => {
-
-          const formattedPayment: Payment = {
-            ...payment,
-            token: {
-              ...payment.token,
-              transaction: new Uint8Array(payment.token.transaction)
-            }
-          }
-
-          setPayments((prevPayments) => {
-            const updated = [...prevPayments, formattedPayment]
-            return updated
-          })
-
-          fetchPayments()
+      const formattedPayments: Payment[] = paymentsToReceive.map((payment) => ({
+        ...payment,
+        token: {
+          ...payment.token,
+          transaction: new Uint8Array(payment.token.transaction)
         }
-      })
+      }))
+
+      setPayments(formattedPayments)
     } catch (error) {
-      console.error('[APP] Error listening for live payments:', error)
+      console.error('[APP] Error fetching incoming payments:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  listenForPayments()
-}, [])
+  // Load initial payments
+  useEffect(() => {
+    fetchPayments()
+  }, [])
+
+  // Listen for live payments
+  useEffect(() => {
+
+    const listenForPayments = async () => {
+      try {
+        await peerPayClient.initializeConnection()
+
+        await peerPayClient.listenForLivePayments({
+          onPayment: (payment: IncomingPayment) => {
+
+            const formattedPayment: Payment = {
+              ...payment,
+              token: {
+                ...payment.token,
+                transaction: new Uint8Array(payment.token.transaction)
+              }
+            }
+
+            setPayments((prevPayments) => {
+              const updated = [...prevPayments, formattedPayment]
+              return updated
+            })
+
+            fetchPayments()
+          }
+        })
+      } catch (error) {
+        console.error('[APP] Error listening for live payments:', error)
+      }
+    }
+
+    listenForPayments()
+  }, [])
 
 
   return (
     <Container maxWidth='sm'>
+      <NoMncModal appName={'PeerPay'} open={isMncMissing} onClose={() => setIsMncMissing(false)} />
       <Box
         sx={{
           bgcolor: 'background.default',
