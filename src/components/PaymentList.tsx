@@ -101,7 +101,6 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
                   />
                   {/* Optional debug fallback */}
                   <span style={{ fontSize: '0.8em', opacity: 0.4 }}>
-                    ({payment.token.amount} sats)
                   </span>
                 </Typography>
               </Box>
