@@ -4,6 +4,7 @@ import { IdentityCard } from '@bsv/identity-react'
 import { PeerPayClient, IncomingPayment } from '@bsv/p2p'
 import { WalletClient } from '@bsv/sdk'
 import { toast } from 'react-toastify'
+import { AmountDisplay } from 'amountinator-react'
 
 // Initialize PeerPayClient
 const walletClient = new WalletClient('json-api', 'non-admin.com')
@@ -78,34 +79,47 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
 
   return (
     <List>
-      {payments.map((payment) => (
-        <Box key={payment.messageId}>
-          <Divider />
-          <ListItem sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {payments.map((payment) => {
+        console.log('[PaymentList] Displaying payment amount:', payment.token.amount)
 
-            {/* Sender Identity (Left Side) */}
-            <Box sx={{ display: 'flex', alignItems: 'center', minWidth: '345px', flexShrink: 0 }}>
-              <IdentityCard identityKey={payment.sender} themeMode="dark" />
-            </Box>
+        return (
+          <Box key={payment.messageId}>
+            <Divider />
+            <ListItem sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
-            {/* Payment Amount (Move Further Right) */}
-            <Box sx={{ flexShrink: 0, minWidth: '120px', textAlign: 'right', marginLeft: '50px' }}>
-              <Typography variant="h6">{formatSatoshis(payment.token.amount)}</Typography>
-            </Box>
+              {/* Sender Identity (Left Side) */}
+              <Box sx={{ display: 'flex', alignItems: 'center', minWidth: '345px', flexShrink: 0 }}>
+                <IdentityCard identityKey={payment.sender} themeMode="dark" />
+              </Box>
 
-            {/* Accept & Reject Buttons (Move to the Far Right) */}
-            <Box sx={{ flexShrink: 0, display: 'flex', gap: 2, marginLeft: '50px' }}>
-              <Button onClick={() => handleAccept(payment)} color="primary" variant="contained" size="small">
-                Accept
-              </Button>
-              <Button onClick={() => handleReject(payment)} color="secondary" variant="outlined" size="small">
-                Reject
-              </Button>
-            </Box>
+              {/* Payment Amount (Now using AmountDisplay) */}
+              <Box sx={{ flexShrink: 0, minWidth: '120px', textAlign: 'right', marginLeft: '50px' }}>
+                <Typography variant="h6" sx={{ color: 'white' }}>
+                  <AmountDisplay
+                    paymentAmount={payment.token.amount}
+                    formatOptions={{ useCommas: true, decimalPlaces: 10 }}
+                  />
+                  {/* Optional debug fallback */}
+                  <span style={{ fontSize: '0.8em', opacity: 0.4 }}>
+                    ({payment.token.amount} sats)
+                  </span>
+                </Typography>
+              </Box>
 
-          </ListItem>
-        </Box>
-      ))}
+              {/* Accept & Reject Buttons (Move to the Far Right) */}
+              <Box sx={{ flexShrink: 0, display: 'flex', gap: 2, marginLeft: '50px' }}>
+                <Button onClick={() => handleAccept(payment)} color="primary" variant="contained" size="small">
+                  Accept
+                </Button>
+                <Button onClick={() => handleReject(payment)} color="secondary" variant="outlined" size="small">
+                  Reject
+                </Button>
+              </Box>
+
+            </ListItem>
+          </Box>
+        )
+      })}
     </List>
   )
 }

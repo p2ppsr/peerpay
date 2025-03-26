@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import constants from '../utils/constants'
 import { PeerPayClient } from '@bsv/p2p'
 import { WalletClient } from '@bsv/sdk'
+import { AmountInputField } from 'amountinator-react'
 
 // Initialize PeerPayClient
 const walletClient = new WalletClient('json-api', 'non-admin.com')
@@ -45,7 +46,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
       return
     }
 
-    if (!amount || amount === '' || amount === '0') {
+    if (amountInSats <= 0) {
       toast.error('How much do you want to send?')
       return
     }
@@ -81,16 +82,38 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
         onIdentitySelected={handleIdentitySelected}
         appName='PeerPay'
       />
-      <TextField
-        sx={{ width: '350px' }}
-        label='Amount (Sats)'
-        variant='filled'
-        value={amount}
-        InputProps={{
-          startAdornment: <InputAdornment position="start">{currencySymbol}</InputAdornment>
-        }}
-        onChange={handleAmountChange}
-      />
+
+      <Box sx={{ width: '100%', maxWidth: '350px' }}>
+        <Box
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: '#222', // dark input
+              color: '#fff',
+            },
+            '& .MuiInputBase-input': {
+              color: '#fff', // typed text
+            },
+            '& .MuiInputLabel-root': {
+              color: '#ccc', // label color
+            },
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#555',
+            },
+            '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#888',
+            },
+          }}
+        >
+          <AmountInputField
+            onSatoshisChange={(sats: number) => {
+              console.log('[AmountInputField] Satoshis:', sats)
+              setAmountInSats(sats)
+            }}
+          />
+        </Box>
+      </Box>
+
+
       <Button sx={{ width: '10em' }} type='submit' variant='contained'>Send</Button>
     </Box>
   )
