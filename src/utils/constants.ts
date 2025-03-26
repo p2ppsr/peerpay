@@ -10,7 +10,7 @@ if (
 ) {
   // Local / Staging environment
   constants = {
-    messageboxURL: 'https://staging-messagebox.babbage.systems'
+    messageboxURL: 'https://messagebox.babbage.systems' // NO STAGING URL CURRENTLY: https://staging-messagebox.babbage.systems
   }
 } else {
   // Production environment
