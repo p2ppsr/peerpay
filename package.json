@@ -15,7 +15,6 @@
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.0",
     "amountinator-react": "^0.1.35",
-    "latest": "^0.2.0",
     "metanet-react-prompt": "^1.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
