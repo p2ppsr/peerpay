@@ -7,7 +7,7 @@ import { toast } from 'react-toastify'
 import { AmountDisplay } from 'amountinator-react'
 
 // Initialize PeerPayClient
-const walletClient = new WalletClient('json-api', 'non-admin.com')
+const walletClient = new WalletClient()
 const peerPayClient = new PeerPayClient({
   messageBoxHost: 'https://messagebox.babbage.systems',
   walletClient
