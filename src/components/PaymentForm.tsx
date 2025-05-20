@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useRef } from 'react'
 import { TextField, Button, Box, InputAdornment } from '@mui/material'
 import { IdentitySearchField, Identity } from '@bsv/identity-react'
 import { toast } from 'react-toastify'
@@ -23,6 +23,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
   const [amount, setAmount] = useState('')
   const [amountInSats, setAmountInSats] = useState(0) // Default to 0
   const currencySymbol = 'Sats' // Default to Bitcoin satoshis
+  const amountInSatsRef = useRef(0)
+
 
   // Store identity
   const handleIdentitySelected = (identity: Identity) => {
@@ -38,7 +40,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
       return
     }
 
-    const finalRecipientKey = recipient.identityKey.trim() // Ensure no spaces
+    const finalRecipientKey = recipient.identityKey.trim()
 
     if (finalRecipientKey.length !== 66) {
       toast.error('Invalid recipient key detected!')
@@ -46,24 +48,26 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
       return
     }
 
-    if (amountInSats <= 0) {
+    const satsToSend = amountInSatsRef.current
+    console.log('[handleSubmit] amountInSatsRef:', satsToSend)
+
+    if (satsToSend <= 0) {
       toast.error('How much do you want to send?')
       return
     }
 
     try {
-      // Use PeerPayClient to send the payment
-
-      await peerPayClient.sendLivePayment({ recipient: finalRecipientKey, amount: amountInSats })
+      await peerPayClient.sendLivePayment({ recipient: finalRecipientKey, amount: satsToSend })
       toast.success('Payment sent successfully!')
 
-      onSend(amountInSats, finalRecipientKey)
+      onSend(satsToSend, finalRecipientKey)
       setAmount('')
     } catch (error) {
       toast.error('Error sending payment.')
       console.error('Payment error:', error)
     }
   }
+
 
   const handleAmountChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.target.value.replace(/[^0-9]/g, '') // Allow only numbers
@@ -106,6 +110,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
           <AmountInputField
             onSatoshisChange={(sats: number) => {
               console.log('[AmountInputField] Satoshis:', sats)
+              amountInSatsRef.current = sats
               setAmountInSats(sats)
             }}
           />
