@@ -14,7 +14,7 @@ import constants from './utils/constants'
 import useAsyncEffect from 'use-async-effect'
 
 // Initialize PeerPayClient
-const walletClient = new WalletClient('json-api', 'non-admin.com')
+const walletClient = new WalletClient()
 const peerPayClient = new PeerPayClient({
   messageBoxHost: constants.messageboxURL,
   walletClient,
