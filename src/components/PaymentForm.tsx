@@ -60,9 +60,18 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
 
       onSend(amountInSats, finalRecipientKey)
       setAmount('')
-    } catch (error) {
-      toast.error('Error sending payment.')
-      console.error('Payment error:', error)
+    } catch (error: any) {
+      console.error('[RAW Payment error object]', error)
+      const message =
+        typeof error === 'string'
+          ? error
+          : error?.message ||
+            error?.error?.message ||
+            JSON.stringify(error, Object.getOwnPropertyNames(error)) ||
+            'Unknown error'
+
+      toast.error(`Error sending Payment: ${message}`)
+      console.error('Payment error:', message, error)
     }
   }
 
