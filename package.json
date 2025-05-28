@@ -6,7 +6,7 @@
   "private": true,
   "dependencies": {
     "@bsv/identity-react": "^1.1.1",
-    "@bsv/p2p": "^1.1.4",
+    "@bsv/p2p": "^1.1.5",
     "@bsv/sdk": "^1.5.1",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
