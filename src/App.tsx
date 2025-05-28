@@ -154,7 +154,12 @@ const App: React.FC = () => {
           Incoming Payments
         </Typography>
         {loading && <LinearProgress />}
-        <PaymentList payments={payments} onUpdatePayments={fetchPayments} />
+        <PaymentList
+          payments={payments}
+          onUpdatePayments={(messageId: number) => {
+            setPayments(prev => prev.filter(p => p.messageId !== messageId))
+          }}
+        />
       </Box>
     </Container>
   )
