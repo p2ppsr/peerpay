@@ -55,15 +55,22 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
     try {
       // Use PeerPayClient to send the payment
 
-      // await peerPayClient.sendLivePayment({ recipient: finalRecipientKey, amount: amountInSats })
-      await peerPayClient.sendPayment({ recipient: finalRecipientKey, amount: amountInSats })
+      await peerPayClient.sendLivePayment({ recipient: finalRecipientKey, amount: amountInSats })
       toast.success('Payment sent successfully!')
 
       onSend(amountInSats, finalRecipientKey)
       setAmount('')
-    } catch (error) {
+    } catch (error: any) {
       toast.error('Error sending payment.')
-      console.error('Payment error:', error)
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+            ? error
+            : JSON.stringify(error)
+
+      console.error('[Payment Error]', message)
     }
   }
 
