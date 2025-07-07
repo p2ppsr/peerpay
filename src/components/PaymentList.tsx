@@ -1,7 +1,7 @@
-import React from 'react'
-import { List, ListItem, ListItemText, Button, ListItemSecondaryAction, Box, Divider, Typography } from '@mui/material'
+import React, { useState } from 'react'
+import { List, ListItem, ListItemText, Button, ListItemSecondaryAction, Box, Divider, Typography, CircularProgress } from '@mui/material'
 import { IdentityCard } from '@bsv/identity-react'
-import { PeerPayClient, IncomingPayment } from '@bsv/p2p'
+import { PeerPayClient, IncomingPayment } from '@bsv/message-box-client'
 import { WalletClient } from '@bsv/sdk'
 import { toast } from 'react-toastify'
 import { AmountDisplay } from 'amountinator-react'
@@ -15,7 +15,7 @@ const peerPayClient = new PeerPayClient({
 
 // Define Payment interface
 export interface Payment {
-  messageId: number
+  messageId: string
   sender: string
   token: {
     customInstructions: {
@@ -27,19 +27,19 @@ export interface Payment {
   }
 }
 
-// Function to format satoshis for display
-const formatSatoshis = (satoshis: number): string => {
-  return `${satoshis.toLocaleString()} Sats`
-}
-
 interface PaymentListProps {
   payments?: Payment[] // Default to undefined to prevent crashes
-  onUpdatePayments: () => void // Function to refresh payment list
+  onUpdatePayments: (messageId: string) => void // Function to refresh payment list
 }
 
 const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePayments }) => {
+  const [processingPaymentId, setProcessingPaymentId] = useState<string | null>(null)
+  const [processingAction, setProcessingAction] = useState<'accept' | 'reject' | null>(null)
   const handleAccept = async (payment: Payment) => {
     try {
+      setProcessingPaymentId(payment.messageId)
+      setProcessingAction('accept')
+      
       const formattedPayment: IncomingPayment = {
         messageId: payment.messageId,
         sender: payment.sender,
@@ -51,15 +51,21 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
 
       await peerPayClient.acceptPayment(formattedPayment)
       toast.success('Payment accepted!')
-      onUpdatePayments() // Refresh payment list
+      onUpdatePayments(payment.messageId) // Refresh payment list
     } catch (error) {
       toast.error('Failed to accept payment.')
       console.error('Error accepting payment:', error)
+    } finally {
+      setProcessingPaymentId(null)
+      setProcessingAction(null)
     }
   }
 
   const handleReject = async (payment: Payment) => {
     try {
+      setProcessingPaymentId(payment.messageId)
+      setProcessingAction('reject')
+      
       const formattedPayment: IncomingPayment = {
         ...payment,
         token: {
@@ -70,10 +76,13 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
 
       await peerPayClient.rejectPayment(formattedPayment)
       toast.info('Payment rejected.')
-      onUpdatePayments() // Refresh payment list
+      onUpdatePayments(payment.messageId) // Refresh payment list
     } catch (error) {
       toast.error('Failed to reject payment.')
       console.error('Error rejecting payment:', error)
+    } finally {
+      setProcessingPaymentId(null)
+      setProcessingAction(null)
     }
   }
 
@@ -107,11 +116,33 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
 
               {/* Accept & Reject Buttons (Move to the Far Right) */}
               <Box sx={{ flexShrink: 0, display: 'flex', gap: 2, marginLeft: '50px' }}>
-                <Button onClick={() => handleAccept(payment)} color="primary" variant="contained" size="small">
-                  Accept
+                <Button 
+                  onClick={() => handleAccept(payment)} 
+                  color="primary" 
+                  variant="contained" 
+                  size="small"
+                  disabled={processingPaymentId === payment.messageId}
+                >
+                  {processingPaymentId === payment.messageId && processingAction === 'accept' ? (
+                    <>
+                      <CircularProgress size={16} color="inherit" sx={{ mr: 1 }} />
+                      Processing...
+                    </>
+                  ) : 'Accept'}
                 </Button>
-                <Button onClick={() => handleReject(payment)} color="secondary" variant="outlined" size="small">
-                  Reject
+                <Button 
+                  onClick={() => handleReject(payment)} 
+                  color="secondary" 
+                  variant="outlined" 
+                  size="small"
+                  disabled={processingPaymentId === payment.messageId}
+                >
+                  {processingPaymentId === payment.messageId && processingAction === 'reject' ? (
+                    <>
+                      <CircularProgress size={16} color="inherit" sx={{ mr: 1 }} />
+                      Processing...
+                    </>
+                  ) : 'Reject'}
                 </Button>
               </Box>
 

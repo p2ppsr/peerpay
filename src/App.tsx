@@ -8,10 +8,27 @@ import { checkForMetaNetClient, NoMncModal } from 'metanet-react-prompt'
 import './App.scss'
 
 // Import PeerPayClient
-import { PeerPayClient, IncomingPayment } from '@bsv/p2p'
+import { PeerPayClient, IncomingPayment } from '@bsv/message-box-client'
 import { WalletClient } from '@bsv/sdk'
 import constants from './utils/constants'
 import useAsyncEffect from 'use-async-effect'
+
+const originalLog = console.log
+console.log = (...args) => {
+  const formattedArgs = args.map(arg => {
+    if (typeof arg === 'object') {
+      try {
+        return JSON.stringify(arg, null, 2)
+      } catch (e) {
+        return '[Unstringifiable object]'
+      }
+    }
+    return arg
+  })
+
+  const stack = new Error().stack?.split('\n')[2]?.trim()
+  originalLog('[LOG]', ...formattedArgs, '\n→', stack)
+}
 
 // Initialize PeerPayClient
 const walletClient = new WalletClient()
@@ -137,7 +154,12 @@ const App: React.FC = () => {
           Incoming Payments
         </Typography>
         {loading && <LinearProgress />}
-        <PaymentList payments={payments} onUpdatePayments={fetchPayments} />
+        <PaymentList
+          payments={payments}
+          onUpdatePayments={(messageId: string) => {
+            setPayments(prev => prev.filter(p => p.messageId !== messageId))
+          }}
+        />
       </Box>
     </Container>
   )
