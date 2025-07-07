@@ -1,10 +1,10 @@
 import React, { useCallback, useState } from 'react'
-import { TextField, Button, Box, InputAdornment } from '@mui/material'
-import { IdentitySearchField, Identity } from '@bsv/identity-react'
+import { TextField, Button, Box, InputAdornment, CircularProgress } from '@mui/material'
+import { IdentitySearchField } from '@bsv/identity-react'
 import { toast } from 'react-toastify'
 import constants from '../utils/constants'
-import { PeerPayClient } from '@bsv/p2p'
-import { WalletClient } from '@bsv/sdk'
+import { PeerPayClient } from '@bsv/message-box-client'
+import { DisplayableIdentity, WalletClient } from '@bsv/sdk'
 import { AmountInputField } from 'amountinator-react'
 
 // Initialize PeerPayClient
@@ -19,14 +19,15 @@ interface PaymentFormProps {
 }
 
 const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
-  const [recipient, setRecipient] = useState<Identity | null>(null)
+  const [recipient, setRecipient] = useState<DisplayableIdentity | null>(null)
   const [amount, setAmount] = useState('')
   const [amountInSats, setAmountInSats] = useState(0) // Default to 0
+  const [isSending, setIsSending] = useState(false)
   const currencySymbol = 'Sats' // Default to Bitcoin satoshis
 
 
   // Store identity
-  const handleIdentitySelected = (identity: Identity) => {
+  const handleIdentitySelected = (identity: DisplayableIdentity) => {
 
     setRecipient(identity) // Store the full identity directly
   }
@@ -52,26 +53,28 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
       return
     }
 
+    setIsSending(true)
+
     try {
       // Use PeerPayClient to send the payment
-
       await peerPayClient.sendLivePayment({ recipient: finalRecipientKey, amount: amountInSats })
       toast.success('Payment sent successfully!')
 
       onSend(amountInSats, finalRecipientKey)
       setAmount('')
     } catch (error: any) {
-      console.error('[RAW Payment error object]', error)
-      const message =
-        typeof error === 'string'
-          ? error
-          : error?.message ||
-            error?.error?.message ||
-            JSON.stringify(error, Object.getOwnPropertyNames(error)) ||
-            'Unknown error'
+      toast.error('Error sending payment.')
 
-      toast.error(`Error sending Payment: ${message}`)
-      console.error('Payment error:', message, error)
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+            ? error
+            : JSON.stringify(error)
+
+      console.error('[Payment Error]', message)
+    } finally {
+      setIsSending(false)
     }
   }
 
@@ -123,7 +126,19 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
       </Box>
 
 
-      <Button sx={{ width: '10em' }} type='submit' variant='contained'>Send</Button>
+      <Button
+        sx={{ width: '10em' }}
+        type='submit'
+        variant='contained'
+        disabled={isSending}
+      >
+        {isSending ? (
+          <>
+            <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+            Sending...
+          </>
+        ) : 'Send'}
+      </Button>
     </Box>
   )
 }
