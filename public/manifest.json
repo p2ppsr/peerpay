@@ -12,11 +12,40 @@
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff",
-    "babbage": {
-    "protocolPermissions": {
-      "3241645161d8": "Needs permission to derive a public key used in payment to a peer.",
-      "authrite message signature": "Needs permission to make authenticated requests when making payments.",
-      "identity key": "Needs permission to identify you when making payments."
+  "babbage": {
+    "groupPermissions": {
+      "protocolPermissions": [
+        {
+          "protocolID": [
+            1,
+            "identity resolution"
+          ],
+          "counterparty": "self",
+          "description": "Allows the app to know who you are."
+        },
+        {
+          "protocolID": [
+            1,
+            "messagebox advertisement"
+          ],
+          "counterparty": "anyone",
+          "description": "Allows for creating a messagebox overlay advertisement."
+        },
+        {
+          "protocolID": [
+            2,
+            "auth message signature"
+          ],
+          "counterparty": "028155878063d691f01cfc0eeb626404ebe9303ec50f9542c234c5c85100a98ca1",
+          "description": "Allows for sending transactions to the messagebox overlay service."
+        }
+      ],
+      "basketAccess": [
+        {
+          "basket": "wallet settings",
+          "description": "Contains the settings for your BRC100 wallet."
+        }
+      ]
     }
   }
 }
