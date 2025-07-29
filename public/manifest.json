@@ -12,11 +12,58 @@
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff",
-    "babbage": {
-    "protocolPermissions": {
-      "3241645161d8": "Needs permission to derive a public key used in payment to a peer.",
-      "authrite message signature": "Needs permission to make authenticated requests when making payments.",
-      "identity key": "Needs permission to identify you when making payments."
+  "babbage": {
+    "groupPermissions": {
+      "protocolPermissions": [
+        {
+          "protocolID": [
+            2,
+            "3241645161d8"
+          ],
+          "counterparty": "self",
+          "description": "Needs permission to derive a public key used in payment to a peer."
+        },
+        {
+          "protocolID": [
+            2,
+            "messagebox"
+          ],
+          "counterparty": "self",
+          "description": "Needs permission for message delivery."
+        },
+        {
+          "protocolID": [
+            2,
+            "auth message signature"
+          ],
+          "counterparty": "028155878063d691f01cfc0eeb626404ebe9303ec50f9542c234c5c85100a98ca1",
+          "description": "Needs permission for secure communication with messagebox backend."
+        },
+        {
+          "protocolID": [
+            1,
+            "identity resolution"
+          ],
+          "counterparty": "self",
+          "description": "Needs permission for identity resolution."
+        },
+        {
+          "protocolID": [
+            2,
+            "wallet settings"
+          ],
+          "counterparty": "self",
+          "description": "Needs permission for accessing default currency preference."
+        },
+        {
+          "protocolID": [
+            2,
+            "server hmac"
+          ],
+          "counterparty": "self",
+          "description": "Needs permission for key derivation relating to hmac generation."
+        }
+      ]
     }
   }
 }

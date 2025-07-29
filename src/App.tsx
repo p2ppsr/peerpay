@@ -64,6 +64,7 @@ const App: React.FC = () => {
   // Function to fetch payments
   const fetchPayments = async () => {
     try {
+      await walletClient.waitForAuthentication()
       setLoading(true)
       const paymentsToReceive = await peerPayClient.listIncomingPayments()
 
