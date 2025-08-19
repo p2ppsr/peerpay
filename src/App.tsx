@@ -65,7 +65,7 @@ const App: React.FC = () => {
   const fetchPayments = async () => {
     try {
       setLoading(true)
-      const paymentsToReceive = await peerPayClient.listIncomingPayments()
+      const paymentsToReceive = await peerPayClient.listIncomingPayments(constants.messageboxURL)
 
       const formattedPayments: Payment[] = paymentsToReceive.map((payment) => ({
         ...payment,
@@ -96,6 +96,7 @@ const App: React.FC = () => {
         await peerPayClient.initializeConnection()
 
         await peerPayClient.listenForLivePayments({
+          overrideHost: constants.messageboxURL,
           onPayment: (payment: IncomingPayment) => {
 
             const formattedPayment: Payment = {
