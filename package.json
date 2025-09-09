@@ -5,9 +5,9 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@bsv/identity-react": "^1.1.5",
-    "@bsv/message-box-client": "^1.2.6",
-    "@bsv/sdk": "^1.6.23",
+    "@bsv/identity-react": "^1.1.7",
+    "@bsv/message-box-client": "^1.2.7",
+    "@bsv/sdk": "^1.7.5",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.11.16",
