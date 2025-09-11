@@ -44,24 +44,20 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
         return
       }
 
-      // Initialize QR Scanner
+      // Initialize QR Scanner with simplified settings for better compatibility
       const scanner = new QrScanner(
         videoRef.current,
         (result: any) => {
-          console.log('QR Code scanned:', result.data)
-          onScan(result.data)
+          console.log('QR Code scanned successfully:', result)
+          const data = typeof result === 'string' ? result : result?.data || result
+          onScan(data)
           cleanup()
-        },
-        {
-          onDecodeError: (error: any) => {
-            // Don't log decode errors - they're normal when no QR code is visible
-            console.debug('QR Decode attempt:', error?.message || error)
-          },
-          highlightScanRegion: true,
-          highlightCodeOutline: true,
-          returnDetailedScanResult: true,
         }
       )
+
+      // Configure scanner options after creation
+      scanner.setInversionMode('both') // Try both normal and inverted
+      scanner.setGrayscaleWeights(0.299, 0.587, 0.114, true) // Optimize for better detection
 
       scannerRef.current = scanner
 
@@ -227,6 +223,9 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
             objectFit: 'cover',
             display: isLoading || error ? 'none' : 'block',
           }}
+          playsInline
+          muted
+          autoPlay
         />
       </Box>
 

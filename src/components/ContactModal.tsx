@@ -23,6 +23,7 @@ import { DisplayableIdentity, IdentityClient } from '@bsv/sdk'
 import { toast } from 'react-toastify'
 import QRScanner from './QRScanner'
 import ContactSelector from './ContactSelector'
+import TestQRGenerator from './TestQRGenerator'
 import { parseQRData } from '../utils/qrUtils'
 
 interface ContactModalProps {
@@ -190,32 +191,37 @@ const ContactModal: React.FC<ContactModalProps> = ({
 
           {/* QR Scanner Tab */}
           <TabPanel value={activeTab} index={1}>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: 300,
-                p: 3,
-                textAlign: 'center',
-              }}
-            >
-              <QrIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
-              <Typography variant="h6" gutterBottom>
-                Scan QR Code
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Scan a QR code containing an identity key to add as a contact
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<QrIcon />}
-                onClick={() => setShowScanner(true)}
-                size="large"
+            <Box sx={{ p: 2 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: 200,
+                  p: 3,
+                  textAlign: 'center',
+                }}
               >
-                Open Camera
-              </Button>
+                <QrIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
+                <Typography variant="h6" gutterBottom>
+                  Scan QR Code
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Scan a QR code containing an identity key to add as a contact
+                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<QrIcon />}
+                  onClick={() => setShowScanner(true)}
+                  size="large"
+                >
+                  Open Camera
+                </Button>
+              </Box>
+
+              {/* Test QR Generator for debugging */}
+              <TestQRGenerator />
             </Box>
           </TabPanel>
 
