@@ -1,11 +1,13 @@
 import React, { useCallback, useState } from 'react'
-import { TextField, Button, Box, InputAdornment, CircularProgress } from '@mui/material'
+import { TextField, Button, Box, InputAdornment, CircularProgress, Chip, Avatar, Typography } from '@mui/material'
 import { IdentitySearchField } from '@bsv/identity-react'
+import { ContactPage as ContactsIcon, Person as PersonIcon, QrCodeScanner as QrIcon } from '@mui/icons-material'
 import { toast } from 'react-toastify'
 import constants from '../utils/constants'
 import { PeerPayClient } from '@bsv/message-box-client'
 import { DisplayableIdentity, WalletClient } from '@bsv/sdk'
 import { AmountInputField } from 'amountinator-react'
+import ContactModal from './ContactModal'
 
 // Initialize PeerPayClient
 const walletClient = new WalletClient()
@@ -23,13 +25,22 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
   const [amount, setAmount] = useState('')
   const [amountInSats, setAmountInSats] = useState(0) // Default to 0
   const [isSending, setIsSending] = useState(false)
+  const [showContactModal, setShowContactModal] = useState(false)
   const currencySymbol = 'Sats' // Default to Bitcoin satoshis
-
 
   // Store identity
   const handleIdentitySelected = (identity: DisplayableIdentity) => {
-
     setRecipient(identity) // Store the full identity directly
+  }
+
+  // Handle contact selection from modal
+  const handleContactSelected = (contact: DisplayableIdentity) => {
+    setRecipient(contact)
+    setShowContactModal(false)
+  }
+
+  const clearRecipient = () => {
+    setRecipient(null)
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -90,10 +101,87 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
 
   return (
     <Box component='form' onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
-      <IdentitySearchField
-        onIdentitySelected={handleIdentitySelected}
-        appName='PeerPay'
-      />
+      {/* Recipient Selection */}
+      <Box sx={{ width: '100%', maxWidth: '350px' }}>
+        {recipient ? (
+          // Show selected recipient
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              p: 2,
+              border: '1px solid',
+              borderColor: 'primary.main',
+              borderRadius: 1,
+              backgroundColor: 'rgba(25, 118, 210, 0.1)',
+            }}
+          >
+            <Avatar
+              src={recipient.avatarURL}
+              sx={{ bgcolor: 'primary.main' }}
+            >
+              {recipient.avatarURL ? null : <PersonIcon />}
+            </Avatar>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'medium' }}>
+                {recipient.name || 'Unknown Contact'}
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  fontFamily: 'monospace',
+                  fontSize: '0.8rem',
+                  wordBreak: 'break-all',
+                }}
+              >
+                {recipient.abbreviatedKey || recipient.identityKey}
+              </Typography>
+            </Box>
+            <Button
+              size="small"
+              onClick={clearRecipient}
+              sx={{ minWidth: 'auto' }}
+            >
+              Change
+            </Button>
+          </Box>
+        ) : (
+          // Show recipient selection options
+          <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={<ContactsIcon />}
+              onClick={() => setShowContactModal(true)}
+              sx={{ flex: 1 }}
+            >
+              Select Contact
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<QrIcon />}
+              onClick={() => setShowContactModal(true)}
+              sx={{ flex: 1 }}
+            >
+              Scan QR
+            </Button>
+          </Box>
+        )}
+
+        {/* Fallback to identity search */}
+        {!recipient && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1, textAlign: 'center' }}>
+              Or search for an identity:
+            </Typography>
+            <IdentitySearchField
+              onIdentitySelected={handleIdentitySelected}
+              appName='PeerPay'
+            />
+          </Box>
+        )}
+      </Box>
 
       <Box sx={{ width: '100%', maxWidth: '350px' }}>
         <Box
@@ -139,6 +227,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
           </>
         ) : 'Send'}
       </Button>
+
+      {/* Contact Modal */}
+      <ContactModal
+        open={showContactModal}
+        onClose={() => setShowContactModal(false)}
+        onContactSelected={handleContactSelected}
+      />
     </Box>
   )
 }

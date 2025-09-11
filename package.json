@@ -16,6 +16,8 @@
     "@types/node": "^20.11.0",
     "amountinator-react": "^0.1.38",
     "metanet-react-prompt": "^1.0.4",
+    "qr-scanner": "^1.4.2",
+    "qrcode": "^1.5.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^5.3.4",
@@ -48,6 +50,7 @@
     ]
   },
   "devDependencies": {
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^18.2.47",
     "@types/react-dom": "^18.2.18",
     "@types/react-router-dom": "^5.3.3",
