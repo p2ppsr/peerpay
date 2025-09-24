@@ -1,12 +1,12 @@
 import React, { useCallback, useState } from 'react'
-import { TextField, Button, Box, InputAdornment, CircularProgress, Chip, Avatar, Typography } from '@mui/material'
-import { IdentitySearchField } from '@bsv/identity-react'
-import { ContactPage as ContactsIcon, Person as PersonIcon, QrCodeScanner as QrIcon } from '@mui/icons-material'
+import { TextField, Button, Box, InputAdornment, CircularProgress, Chip, Avatar, Typography, Paper } from '@mui/material'
+import { IdentitySearchField, IdentityCard } from '@bsv/identity-react'
+import { ContactPage as ContactsIcon, Person as PersonIcon, QrCodeScanner as QrIcon, CheckCircle as CheckIcon } from '@mui/icons-material'
 import { toast } from 'react-toastify'
 import constants from '../utils/constants'
 import { PeerPayClient } from '@bsv/message-box-client'
 import { DisplayableIdentity, WalletClient } from '@bsv/sdk'
-import { AmountInputField } from 'amountinator-react'
+import { AmountInputField, AmountDisplay } from 'amountinator-react'
 import ContactModal from './ContactModal'
 
 // Initialize PeerPayClient
@@ -26,6 +26,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
   const [amountInSats, setAmountInSats] = useState(0) // Default to 0
   const [isSending, setIsSending] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
+  const [showPaymentSent, setShowPaymentSent] = useState(false)
+  const [sentPaymentDetails, setSentPaymentDetails] = useState<{ amount: number; recipient: string } | null>(null)
   const currencySymbol = 'Sats' // Default to Bitcoin satoshis
 
   // Store identity
@@ -41,6 +43,20 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
 
   const clearRecipient = () => {
     setRecipient(null)
+  }
+
+  // Clear the entire form
+  const clearForm = () => {
+    setRecipient(null)
+    setAmount('')
+    setAmountInSats(0)
+  }
+
+  // Handle OK button after payment sent
+  const handleOkClick = () => {
+    setShowPaymentSent(false)
+    setSentPaymentDetails(null)
+    clearForm()
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -71,8 +87,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
       await peerPayClient.sendLivePayment({ recipient: finalRecipientKey, amount: amountInSats })
       toast.success('Payment sent successfully!')
 
+      // Store payment details for success view
+      setSentPaymentDetails({ amount: amountInSats, recipient: finalRecipientKey })
+      
+      // Show payment sent success view
+      setShowPaymentSent(true)
+      
+      // Notify parent component
       onSend(amountInSats, finalRecipientKey)
-      setAmount('')
     } catch (error: any) {
       toast.error('Error sending payment.')
 
@@ -99,6 +121,64 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
     }
   }, [])
 
+  // Payment Success View
+  if (showPaymentSent && sentPaymentDetails) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 3, py: 4 }}>
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
+            borderRadius: 2,
+            backgroundColor: 'success.main',
+            color: 'success.contrastText',
+            textAlign: 'center',
+            minWidth: '300px'
+          }}
+        >
+          <CheckIcon sx={{ fontSize: 60, mb: 2 }} />
+          <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+            Payment Sent!
+          </Typography>
+          <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
+            <AmountDisplay 
+              paymentAmount={sentPaymentDetails.amount}
+              formatOptions={{ useCommas: true, decimalPlaces: 2 }}
+            />
+          </Box>
+          <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>
+            sent to:
+          </Typography>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'center',
+            '& *': {
+              color: 'white !important'
+            },
+            '& .MuiTypography-root': {
+              color: 'white !important'
+            }
+          }}>
+            <IdentityCard 
+              identityKey={sentPaymentDetails.recipient} 
+              themeMode="light"
+            />
+          </Box>
+        </Paper>
+        
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleOkClick}
+          sx={{ px: 4, py: 1.5, fontSize: '1.1rem' }}
+        >
+          OK
+        </Button>
+      </Box>
+    )
+  }
+
+  // Regular Form View
   return (
     <Box component='form' onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
       {/* Recipient Selection */}

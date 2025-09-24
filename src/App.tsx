@@ -4,6 +4,7 @@ import PaymentForm from './components/PaymentForm'
 import PaymentList, { Payment } from './components/PaymentList'
 import { useTheme } from '@mui/material/styles'
 import { checkForMetaNetClient, NoMncModal } from 'metanet-react-prompt'
+import RecentlySentList from './components/RecentlySentList'
 
 import './App.scss'
 
@@ -12,6 +13,14 @@ import { PeerPayClient, IncomingPayment } from '@bsv/message-box-client'
 import { WalletClient } from '@bsv/sdk'
 import constants from './utils/constants'
 import useAsyncEffect from 'use-async-effect'
+
+// Interface for sent payments
+export interface SentPayment {
+  amount: number
+  recipient: string
+  timestamp: number
+  id: string
+}
 
 const originalLog = console.log
 console.log = (...args) => {
@@ -40,6 +49,7 @@ const peerPayClient = new PeerPayClient({
 
 const App: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([])
+  const [recentlySent, setRecentlySent] = useState<SentPayment[]>([])
   const [loading, setLoading] = useState(false)
   const [isMncMissing, setIsMncMissing] = useState<boolean>(false)
   const theme = useTheme()
@@ -124,6 +134,18 @@ const App: React.FC = () => {
     listenForPayments()
   }, [])
 
+  // Handle payment sent
+  const handlePaymentSent = (amount: number, recipient: string) => {
+    const sentPayment: SentPayment = {
+      id: Date.now().toString(),
+      amount,
+      recipient,
+      timestamp: Date.now()
+    }
+    
+    setRecentlySent(prev => [sentPayment, ...prev.slice(0, 4)]) // Keep only last 5 sent payments
+    fetchPayments() // Refresh incoming payments
+  }
 
   return (
     <Container maxWidth='sm'>
@@ -149,8 +171,17 @@ const App: React.FC = () => {
           <Typography variant='body1' paddingTop={5}>
             Simple Peer-to-peer Payments
           </Typography>
-          <PaymentForm onSend={fetchPayments} />
+          <PaymentForm onSend={handlePaymentSent} />
         </Box>
+
+        {recentlySent.length > 0 && (
+          <>
+            <Typography variant='h6' component='h2' paddingTop={5}>
+              Recently Sent
+            </Typography>
+            <RecentlySentList payments={recentlySent} />
+          </>
+        )}
 
         <Typography variant='h6' component='h2' paddingTop={5}>
           Incoming Payments

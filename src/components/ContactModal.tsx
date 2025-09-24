@@ -23,7 +23,6 @@ import { DisplayableIdentity, IdentityClient } from '@bsv/sdk'
 import { toast } from 'react-toastify'
 import QRScanner from './QRScanner'
 import ContactSelector from './ContactSelector'
-import TestQRGenerator from './TestQRGenerator'
 import { parseQRData } from '../utils/qrUtils'
 
 interface ContactModalProps {
@@ -220,8 +219,6 @@ const ContactModal: React.FC<ContactModalProps> = ({
                 </Button>
               </Box>
 
-              {/* Test QR Generator for debugging */}
-              <TestQRGenerator />
             </Box>
           </TabPanel>
 

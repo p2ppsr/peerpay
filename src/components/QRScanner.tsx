@@ -30,21 +30,36 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
   }, [isOpen])
 
   const initializeScanner = async () => {
-    if (!videoRef.current) return
+    if (!videoRef.current) {
+      console.error('Video element not found')
+      return
+    }
 
     try {
       setIsLoading(true)
       setError('')
+      console.log('Initializing QR scanner...')
+
+      // Check if we're running in a secure context (HTTPS or localhost)
+      if (!window.isSecureContext) {
+        setError('Camera access requires HTTPS or localhost. Please use a secure connection.')
+        setIsLoading(false)
+        return
+      }
 
       // Check if camera is available
+      console.log('Checking for camera...')
       const hasCamera = await QrScanner.hasCamera()
+      console.log('Camera available:', hasCamera)
+      
       if (!hasCamera) {
         setError('No camera found on this device')
         setIsLoading(false)
         return
       }
 
-      // Initialize QR Scanner with simplified settings for better compatibility
+      // Initialize QR Scanner with explicit configuration for better compatibility
+      console.log('Creating QR scanner instance...')
       const scanner = new QrScanner(
         videoRef.current,
         (result: any) => {
@@ -52,21 +67,34 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
           const data = typeof result === 'string' ? result : result?.data || result
           onScan(data)
           cleanup()
+        },
+        {
+          highlightScanRegion: true,
+          highlightCodeOutline: true,
+          preferredCamera: 'environment', // Use back camera on mobile
+          maxScansPerSecond: 5
         }
       )
 
       // Configure scanner options after creation
       scanner.setInversionMode('both') // Try both normal and inverted
-      scanner.setGrayscaleWeights(0.299, 0.587, 0.114, true) // Optimize for better detection
-
+      
       scannerRef.current = scanner
 
       // Start scanning
+      console.log('Starting scanner...')
       await scanner.start()
+      console.log('Scanner started successfully')
+      
       setHasPermission(true)
       setIsLoading(false)
     } catch (err: any) {
       console.error('Scanner initialization error:', err)
+      console.error('Error details:', {
+        name: err.name,
+        message: err.message,
+        stack: err.stack
+      })
       
       if (err.name === 'NotAllowedError' || err.message?.includes('Permission denied')) {
         setError('Camera permission denied. Please allow camera access and try again.')
@@ -74,7 +102,11 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
       } else if (err.name === 'NotFoundError') {
         setError('No camera found on this device')
       } else if (err.name === 'NotSupportedError') {
-        setError('Camera not supported in this browser')
+        setError('Camera not supported in this browser. Try using Chrome, Firefox, or Safari.')
+      } else if (err.name === 'NotReadableError') {
+        setError('Camera is already in use by another application')
+      } else if (err.message?.includes('secure context')) {
+        setError('Camera access requires HTTPS or localhost. Please use a secure connection.')
       } else {
         setError(`Failed to initialize camera: ${err.message || 'Unknown error'}`)
       }
@@ -196,13 +228,42 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
             </Alert>
             {hasPermission === false && (
               <Typography variant="body2" sx={{ color: 'white', mb: 2 }}>
-                To scan QR codes, please:
+                To enable camera access:
                 <br />
-                1. Click the camera icon in your browser's address bar
+                1. Click the camera/lock icon in your browser's address bar
                 <br />
-                2. Select "Allow" for camera access
+                2. Select "Allow" for camera permissions
                 <br />
-                3. Refresh the page
+                3. Click "Try Again" below
+                <br />
+                <br />
+                If using Chrome: Settings → Privacy → Camera → Allow this site
+                <br />
+                If using Safari: Settings → Websites → Camera → Allow
+              </Typography>
+            )}
+            
+            {error.includes('secure context') && (
+              <Typography variant="body2" sx={{ color: 'white', mb: 2 }}>
+                Camera access requires a secure connection:
+                <br />
+                • Use HTTPS (not HTTP)
+                <br />
+                • Or access via localhost
+                <br />
+                • Or try using Chrome's dev tools for testing
+              </Typography>
+            )}
+
+            {error.includes('already in use') && (
+              <Typography variant="body2" sx={{ color: 'white', mb: 2 }}>
+                The camera is being used by another app:
+                <br />
+                • Close other camera apps
+                <br />
+                • Close other browser tabs using camera
+                <br />
+                • Try refreshing this page
               </Typography>
             )}
             <Button
@@ -242,6 +303,42 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
         >
           Position the QR code within the camera view
         </Typography>
+      )}
+
+      {/* Debug Info */}
+      {process.env.NODE_ENV === 'development' && (
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 16,
+            left: 16,
+            right: 16,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            color: 'white',
+            p: 2,
+            borderRadius: 1,
+            fontSize: '0.8rem',
+          }}
+        >
+          <Typography variant="caption" component="div">
+            Debug Info:
+          </Typography>
+          <Typography variant="caption" component="div">
+            • Secure Context: {window.isSecureContext ? 'Yes' : 'No'}
+          </Typography>
+          <Typography variant="caption" component="div">
+            • Protocol: {window.location.protocol}
+          </Typography>
+          <Typography variant="caption" component="div">
+            • Has Permission: {hasPermission?.toString() || 'Unknown'}
+          </Typography>
+          <Typography variant="caption" component="div">
+            • Loading: {isLoading.toString()}
+          </Typography>
+          <Typography variant="caption" component="div">
+            • Error: {error || 'None'}
+          </Typography>
+        </Box>
       )}
     </Box>
   )
