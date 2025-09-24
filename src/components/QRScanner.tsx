@@ -15,6 +15,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string>('')
   const [hasPermission, setHasPermission] = useState<boolean | null>(null)
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null)
 
   useEffect(() => {
     if (!isOpen) {
@@ -30,15 +31,11 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
   }, [isOpen])
 
   const initializeScanner = async () => {
-    if (!videoRef.current) {
-      console.error('Video element not found')
-      return
-    }
+    if (!videoRef.current) return
 
     try {
       setIsLoading(true)
       setError('')
-      console.log('Initializing QR scanner...')
 
       // Check if we're running in a secure context (HTTPS or localhost)
       if (!window.isSecureContext) {
@@ -47,55 +44,40 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
         return
       }
 
-      // Check if camera is available
-      console.log('Checking for camera...')
-      const hasCamera = await QrScanner.hasCamera()
-      console.log('Camera available:', hasCamera)
+      // Get camera stream directly for better compatibility
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 }
+        } 
+      })
       
-      if (!hasCamera) {
-        setError('No camera found on this device')
-        setIsLoading(false)
-        return
-      }
-
-      // Initialize QR Scanner with explicit configuration for better compatibility
-      console.log('Creating QR scanner instance...')
+      // Set up video element with the stream
+      videoRef.current.srcObject = stream
+      setVideoStream(stream)
+      
+      // Ensure video plays
+      await videoRef.current.play()
+      
+      // Initialize QR scanner on the video element
       const scanner = new QrScanner(
         videoRef.current,
         (result: any) => {
-          console.log('QR Code scanned successfully:', result)
           const data = typeof result === 'string' ? result : result?.data || result
           onScan(data)
           cleanup()
-        },
-        {
-          highlightScanRegion: true,
-          highlightCodeOutline: true,
-          preferredCamera: 'environment', // Use back camera on mobile
-          maxScansPerSecond: 5
         }
       )
 
-      // Configure scanner options after creation
-      scanner.setInversionMode('both') // Try both normal and inverted
-      
+      // Configure scanner options
+      scanner.setInversionMode('both')
       scannerRef.current = scanner
-
-      // Start scanning
-      console.log('Starting scanner...')
-      await scanner.start()
-      console.log('Scanner started successfully')
       
       setHasPermission(true)
       setIsLoading(false)
-    } catch (err: any) {
-      console.error('Scanner initialization error:', err)
-      console.error('Error details:', {
-        name: err.name,
-        message: err.message,
-        stack: err.stack
-      })
       
+    } catch (err: any) {
       if (err.name === 'NotAllowedError' || err.message?.includes('Permission denied')) {
         setError('Camera permission denied. Please allow camera access and try again.')
         setHasPermission(false)
@@ -120,6 +102,18 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
       scannerRef.current.destroy()
       scannerRef.current = null
     }
+    
+    // Clean up video stream
+    if (videoStream) {
+      videoStream.getTracks().forEach(track => track.stop())
+      setVideoStream(null)
+    }
+    
+    // Clear video element
+    if (videoRef.current) {
+      videoRef.current.srcObject = null
+    }
+    
     setIsLoading(true)
     setError('')
     setHasPermission(null)
@@ -305,41 +299,6 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
         </Typography>
       )}
 
-      {/* Debug Info */}
-      {process.env.NODE_ENV === 'development' && (
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: 16,
-            left: 16,
-            right: 16,
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            color: 'white',
-            p: 2,
-            borderRadius: 1,
-            fontSize: '0.8rem',
-          }}
-        >
-          <Typography variant="caption" component="div">
-            Debug Info:
-          </Typography>
-          <Typography variant="caption" component="div">
-            • Secure Context: {window.isSecureContext ? 'Yes' : 'No'}
-          </Typography>
-          <Typography variant="caption" component="div">
-            • Protocol: {window.location.protocol}
-          </Typography>
-          <Typography variant="caption" component="div">
-            • Has Permission: {hasPermission?.toString() || 'Unknown'}
-          </Typography>
-          <Typography variant="caption" component="div">
-            • Loading: {isLoading.toString()}
-          </Typography>
-          <Typography variant="caption" component="div">
-            • Error: {error || 'None'}
-          </Typography>
-        </Box>
-      )}
     </Box>
   )
 }
