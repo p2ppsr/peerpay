@@ -37,29 +37,22 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
       setIsLoading(true)
       setError('')
 
-      // Check if we're running in a secure context (HTTPS or localhost)
-      if (!window.isSecureContext) {
-        setError('Camera access requires HTTPS or localhost. Please use a secure connection.')
-        setIsLoading(false)
-        return
-      }
-
       // Get camera stream directly for better compatibility
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
           facingMode: 'environment',
           width: { ideal: 1280, max: 1920 },
           height: { ideal: 720, max: 1080 }
-        } 
+        }
       })
-      
+
       // Set up video element with the stream
       videoRef.current.srcObject = stream
       setVideoStream(stream)
-      
+
       // Ensure video plays
       await videoRef.current.play()
-      
+
       // Initialize QR scanner on the video element
       const scanner = new QrScanner(
         videoRef.current,
@@ -73,10 +66,10 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
       // Configure scanner options
       scanner.setInversionMode('both')
       scannerRef.current = scanner
-      
+
       setHasPermission(true)
       setIsLoading(false)
-      
+
     } catch (err: any) {
       if (err.name === 'NotAllowedError' || err.message?.includes('Permission denied')) {
         setError('Camera permission denied. Please allow camera access and try again.')
@@ -92,7 +85,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
       } else {
         setError(`Failed to initialize camera: ${err.message || 'Unknown error'}`)
       }
-      
+
       setIsLoading(false)
     }
   }
@@ -102,18 +95,18 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
       scannerRef.current.destroy()
       scannerRef.current = null
     }
-    
+
     // Clean up video stream
     if (videoStream) {
       videoStream.getTracks().forEach(track => track.stop())
       setVideoStream(null)
     }
-    
+
     // Clear video element
     if (videoRef.current) {
       videoRef.current.srcObject = null
     }
-    
+
     setIsLoading(true)
     setError('')
     setHasPermission(null)
@@ -236,7 +229,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
                 If using Safari: Settings → Websites → Camera → Allow
               </Typography>
             )}
-            
+
             {error.includes('secure context') && (
               <Typography variant="body2" sx={{ color: 'white', mb: 2 }}>
                 Camera access requires a secure connection:
