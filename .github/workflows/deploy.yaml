@@ -1,88 +1,27 @@
-# .github/workflows/deploy.yaml ── PeerPay
-name: Deploy
+name: Deployment
 on:
   push:
-    branches: [ master, production ]
-
-permissions:          # required for Workload-Identity Federation
-  contents: read
-  id-token: write
-
-env:                  # ── static values
-  GCR_HOST:       us.gcr.io
-  GCP_PROJECT_ID: babbage-private
-  IMAGE_NAME:     peerpay-react
+    branches:
+      - master
 
 jobs:
-  build-and-deploy:
-    name: Build → Push → Deploy
+  build:
+    name: Deploy
     runs-on: ubuntu-latest
-
-    env:            # ── values that depend on the branch
-      CURRENT_BRANCH: ${{ github.ref_name == 'production' && 'production' || 'master' }}
-
     steps:
-    # ─────── 1. Checkout & toolchain ───────────────────────────────────────
-    - uses: actions/checkout@v4
+      - name: Check out code
+        uses: actions/checkout@v4
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 22
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-    - name: Install deps & build React bundle
-      run: |
-        npm ci
-        CI=true npm run build
+      - name: Install CARS globally
+        run: npm i -g @bsv/cars-cli@latest
 
-    # ─────── 2. Authenticate & let Docker use the creds ────────────────────
-    - name: Auth (push)
-      uses: google-github-actions/auth@v1
-      with:
-        credentials_json: ${{ secrets.DOCKER_REGISTRY_PUSH_KEY }}
+      - name: Build artifact
+        run: cars build 1
 
-    - name: Configure Docker for GCR
-      run: |
-        gcloud --quiet auth configure-docker ${{ env.GCR_HOST }}
-
-    # ─────── 3. Build & push image ─────────────────────────────────────────
-    - name: Build and push image
-      id: build
-      env:
-        IMAGE_TAGS: |
-          latest
-          ${{ env.CURRENT_BRANCH }}-${{ github.sha }}
-      run: |
-        set -e
-        for TAG in $IMAGE_TAGS; do
-          IMAGE_URI=${{ env.GCR_HOST }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${TAG}
-          echo "Building $IMAGE_URI"
-          docker build -t "$IMAGE_URI" .
-          docker push  "$IMAGE_URI"
-        done
-        # expose the per-commit tag for later steps
-        echo "IMAGE_URI=${{ env.GCR_HOST }}/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ env.CURRENT_BRANCH }}-${{ github.sha }}" >> "$GITHUB_OUTPUT"
-
-    # ─────── 4. Authenticate for deployment ────────────────────────────────
-    - name: Auth (deploy)
-      uses: google-github-actions/auth@v1
-      with:
-        credentials_json: ${{ secrets.GCP_DEPLOY_CREDS }}
-
-    # ─────── 5. Deploy to Cloud Run ────────────────────────────────────────
-    - name: Deploy to Cloud Run
-      uses: google-github-actions/deploy-cloudrun@v1
-      with:
-        service: ${{ env.IMAGE_NAME }}-${{ env.CURRENT_BRANCH }}
-        image:   ${{ steps.build.outputs.IMAGE_URI }}
-        region:  us-central1
-        timeout: 3540
-
-    # ─────── 6. (Optional) keep one warm instance ──────────────────────────
-    - name: Keep one warm instance & enable CPU boost
-      run: |
-        SERVICE_NAME=${{ env.IMAGE_NAME }}-${{ env.CURRENT_BRANCH }}
-        gcloud run services update "$SERVICE_NAME" \
-          --region=us-central1 \
-          --min-instances=1 \
-          --cpu-boost \
-          --no-use-http2
+      - name: Release artifact
+        run: cars release now 1 --key "${{ secrets.CARS_PRIVATE_KEY }}"
