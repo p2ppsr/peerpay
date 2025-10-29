@@ -6,8 +6,8 @@
   "private": true,
   "dependencies": {
     "@bsv/identity-react": "^1.1.10",
-    "@bsv/message-box-client": "^1.4.1",
-    "@bsv/sdk": "^1.8.6",
+    "@bsv/message-box-client": "^1.4.3",
+    "@bsv/sdk": "^1.8.10",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.11.16",
