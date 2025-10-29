@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { List, ListItem, ListItemText, Button, ListItemSecondaryAction, Box, Divider, Typography, CircularProgress } from '@mui/material'
+import { List, ListItem, Button, Box, Divider, Typography, CircularProgress } from '@mui/material'
 import { IdentityCard } from '@bsv/identity-react'
 import { PeerPayClient, IncomingPayment } from '@bsv/message-box-client'
 import { WalletClient } from '@bsv/sdk'
@@ -24,6 +24,7 @@ export interface Payment {
     }
     transaction: Uint8Array
     amount: number
+    outputIndex?: number
   }
 }
 
@@ -47,6 +48,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
           ...payment.token,
           transaction: Array.from(payment.token.transaction),
         },
+        outputIndex: payment.token.outputIndex ?? 0
       }
 
       await peerPayClient.acceptPayment(formattedPayment)
@@ -72,6 +74,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
           ...payment.token,
           transaction: Array.from(payment.token.transaction),
         },
+        outputIndex: payment.token.outputIndex ?? 0
       }
 
       await peerPayClient.rejectPayment(formattedPayment)
