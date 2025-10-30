@@ -1,18 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Container, Typography, Box, LinearProgress } from '@mui/material'
 import PaymentForm from './components/PaymentForm'
 import PaymentList, { Payment } from './components/PaymentList'
-import { useTheme } from '@mui/material/styles'
-import { checkForMetaNetClient, NoMncModal } from 'metanet-react-prompt'
 import RecentlySentList from './components/RecentlySentList'
 
 import './App.scss'
 
 // Import PeerPayClient
-import { PeerPayClient, IncomingPayment } from '@bsv/message-box-client'
-import { WalletClient } from '@bsv/sdk'
+import { IncomingPayment } from '@bsv/message-box-client'
 import constants from './utils/constants'
-import useAsyncEffect from 'use-async-effect'
+import { peerPayClient } from './utils/peerPayClient'
 
 // Interface for sent payments
 export interface SentPayment {
@@ -39,42 +36,13 @@ console.log = (...args) => {
   originalLog('[LOG]', ...formattedArgs, '\n→', stack)
 }
 
-// Initialize PeerPayClient
-const walletClient = new WalletClient()
-const peerPayClient = new PeerPayClient({
-  messageBoxHost: constants.messageboxURL,
-  walletClient,
-  enableLogging: true
-})
-
 const App: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([])
   const [recentlySent, setRecentlySent] = useState<SentPayment[]>([])
   const [loading, setLoading] = useState(false)
-  const [isMncMissing, setIsMncMissing] = useState<boolean>(false)
-  const theme = useTheme()
 
-  // Run a 1s interval for checking if MNC is running
-  useAsyncEffect(async () => {
-    const intervalId = setInterval(async () => {
-      const hasMNC = await checkForMetaNetClient()
-      if (hasMNC === 0) {
-        setIsMncMissing(true) // Open modal if MNC is not found
-      } else {
-        clearInterval(intervalId)
-        setIsMncMissing(false) // Ensure modal is closed if MNC is found
-      }
-    }, 1000)
-
-    return () => {
-      clearInterval(intervalId)
-    }
-  }, [])
-
-  // Function to fetch payments
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     try {
-      await walletClient.waitForAuthentication()
       setLoading(true)
       const paymentsToReceive = await peerPayClient.listIncomingPayments(constants.messageboxURL)
 
@@ -92,16 +60,16 @@ const App: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   // Load initial payments
   useEffect(() => {
     fetchPayments()
-  }, [])
+  }, [fetchPayments])
 
   // Listen for live payments
   useEffect(() => {
-
+    let isSubscribed = true
     const listenForPayments = async () => {
       try {
         await peerPayClient.initializeConnection()
@@ -109,7 +77,7 @@ const App: React.FC = () => {
         await peerPayClient.listenForLivePayments({
           overrideHost: constants.messageboxURL,
           onPayment: (payment: IncomingPayment) => {
-
+            if (!isSubscribed) return
             const formattedPayment: Payment = {
               ...payment,
               token: {
@@ -119,11 +87,9 @@ const App: React.FC = () => {
             }
 
             setPayments((prevPayments) => {
-              const updated = [...prevPayments, formattedPayment]
-              return updated
+              const exists = prevPayments.some(existing => existing.messageId === formattedPayment.messageId)
+              return exists ? prevPayments : [...prevPayments, formattedPayment]
             })
-
-            fetchPayments()
           }
         })
       } catch (error) {
@@ -132,6 +98,9 @@ const App: React.FC = () => {
     }
 
     listenForPayments()
+    return () => {
+      isSubscribed = false
+    }
   }, [])
 
   // Handle payment sent
@@ -149,7 +118,6 @@ const App: React.FC = () => {
 
   return (
     <Container maxWidth='sm'>
-      <NoMncModal appName={'PeerPay'} open={isMncMissing} onClose={() => setIsMncMissing(false)} />
       <Box
         sx={{
           bgcolor: 'background.default',

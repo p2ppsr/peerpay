@@ -47,7 +47,7 @@ const RecentlySentList: React.FC<RecentlySentListProps> = ({ payments }) => {
                   <Box sx={{ fontWeight: 'medium' }}>
                     <AmountDisplay 
                       paymentAmount={payment.amount}
-                      formatOptions={{ useCommas: true, decimalPlaces: 2 }}
+                      formatOptions={{ useCommas: true, decimalPlaces: 0 }}
                     />
                   </Box>
                   <Typography variant="body2" color="text.secondary">

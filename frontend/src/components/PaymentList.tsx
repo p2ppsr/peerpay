@@ -1,17 +1,10 @@
 import React, { useState } from 'react'
 import { List, ListItem, Button, Box, Divider, Typography, CircularProgress } from '@mui/material'
 import { IdentityCard } from '@bsv/identity-react'
-import { PeerPayClient, IncomingPayment } from '@bsv/message-box-client'
-import { WalletClient } from '@bsv/sdk'
+import { IncomingPayment } from '@bsv/message-box-client'
 import { toast } from 'react-toastify'
 import { AmountDisplay } from 'amountinator-react'
-
-// Initialize PeerPayClient
-const walletClient = new WalletClient()
-const peerPayClient = new PeerPayClient({
-  messageBoxHost: 'https://messagebox.babbage.systems',
-  walletClient
-})
+import { peerPayClient } from '../utils/peerPayClient'
 
 // Define Payment interface
 export interface Payment {
@@ -109,7 +102,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
                 <Typography variant="h6" sx={{ color: 'white' }}>
                   <AmountDisplay
                     paymentAmount={payment.token.amount}
-                    formatOptions={{ useCommas: true, decimalPlaces: 10 }}
+                    formatOptions={{ useCommas: true, decimalPlaces: 0 }}
                   />
                   {/* Optional debug fallback */}
                   <span style={{ fontSize: '0.8em', opacity: 0.4 }}>

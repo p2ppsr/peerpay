@@ -1,20 +1,12 @@
-import React, { useCallback, useState } from 'react'
-import { TextField, Button, Box, InputAdornment, CircularProgress, Chip, Avatar, Typography, Paper } from '@mui/material'
+import React, { useState } from 'react'
+import { Button, Box, CircularProgress, Avatar, Typography, Paper } from '@mui/material'
 import { IdentitySearchField, IdentityCard } from '@bsv/identity-react'
 import { ContactPage as ContactsIcon, Person as PersonIcon, QrCodeScanner as QrIcon, CheckCircle as CheckIcon } from '@mui/icons-material'
 import { toast } from 'react-toastify'
-import constants from '../utils/constants'
-import { PeerPayClient } from '@bsv/message-box-client'
-import { DisplayableIdentity, WalletClient } from '@bsv/sdk'
+import { DisplayableIdentity } from '@bsv/sdk'
 import { AmountInputField, AmountDisplay } from 'amountinator-react'
 import ContactModal from './ContactModal'
-
-// Initialize PeerPayClient
-const walletClient = new WalletClient()
-const peerPayClient = new PeerPayClient({
-  messageBoxHost: constants.messageboxURL,
-  walletClient
-})
+import { peerPayClient } from '../utils/peerPayClient'
 
 interface PaymentFormProps {
   onSend: (amount: number, recipient: string) => void
@@ -22,13 +14,11 @@ interface PaymentFormProps {
 
 const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
   const [recipient, setRecipient] = useState<DisplayableIdentity | null>(null)
-  const [amount, setAmount] = useState('')
   const [amountInSats, setAmountInSats] = useState(0) // Default to 0
   const [isSending, setIsSending] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
   const [showPaymentSent, setShowPaymentSent] = useState(false)
   const [sentPaymentDetails, setSentPaymentDetails] = useState<{ amount: number; recipient: string } | null>(null)
-  const currencySymbol = 'Sats' // Default to Bitcoin satoshis
 
   // Store identity
   const handleIdentitySelected = (identity: DisplayableIdentity) => {
@@ -48,7 +38,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
   // Clear the entire form
   const clearForm = () => {
     setRecipient(null)
-    setAmount('')
     setAmountInSats(0)
   }
 
@@ -111,16 +100,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
     }
   }
 
-  const handleAmountChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const input = event.target.value.replace(/[^0-9]/g, '') // Allow only numbers
-    setAmount(input)
-
-    if (input) {
-      const satoshis = Number(input) // Assume user enters satoshis directly
-      setAmountInSats(satoshis || 0) // Default to 0
-    }
-  }, [])
-
   // Payment Success View
   if (showPaymentSent && sentPaymentDetails) {
     return (
@@ -143,7 +122,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
           <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
             <AmountDisplay 
               paymentAmount={sentPaymentDetails.amount}
-              formatOptions={{ useCommas: true, decimalPlaces: 2 }}
+              formatOptions={{ useCommas: true, decimalPlaces: 0 }}
             />
           </Box>
           <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>

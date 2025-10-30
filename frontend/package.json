@@ -5,9 +5,10 @@
   "type": "module",
   "private": true,
   "dependencies": {
+    "@babbage/go": "^0.1.8",
     "@bsv/identity-react": "^1.1.10",
     "@bsv/message-box-client": "^1.4.3",
-    "@bsv/sdk": "^1.8.10",
+    "@bsv/sdk": "^1.8.11",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.11.16",
@@ -15,7 +16,6 @@
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.0",
     "amountinator-react": "^0.1.38",
-    "metanet-react-prompt": "^1.0.5",
     "qr-scanner": "^1.4.2",
     "qrcode": "^1.5.4",
     "react": "^18.2.0",
@@ -23,7 +23,6 @@
     "react-router": "^5.3.4",
     "react-router-dom": "^5.3.4",
     "react-toastify": "^8.2.0",
-    "use-async-effect": "^2.2.7",
     "zustand": "^4.5.0"
   },
   "scripts": {
