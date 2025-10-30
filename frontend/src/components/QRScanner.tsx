@@ -42,16 +42,12 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
         video: {
           facingMode: 'environment',
           width: { ideal: 1280, max: 1920 },
-          height: { ideal: 720, max: 1080 }
-        }
+          height: { ideal: 720, max: 1080 },
+        },
       })
 
-      // Set up video element with the stream
+      // Set up video element with the stream so the scanner can reuse it
       videoRef.current.srcObject = stream
-      setVideoStream(stream)
-
-      // Ensure video plays
-      await videoRef.current.play()
 
       // Initialize QR scanner on the video element
       const scanner = new QrScanner(
@@ -60,6 +56,12 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
           const data = typeof result === 'string' ? result : result?.data || result
           onScan(data)
           cleanup()
+        },
+        {
+          preferredCamera: 'environment',
+          highlightScanRegion: true,
+          highlightCodeOutline: true,
+          returnDetailedScanResult: true,
         }
       )
 
@@ -67,10 +69,27 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
       scanner.setInversionMode('both')
       scannerRef.current = scanner
 
+      await scanner.start()
+
+      // Persist the stream to ensure it can be stopped on cleanup
+      setVideoStream(stream)
+
       setHasPermission(true)
       setIsLoading(false)
 
     } catch (err: any) {
+      // Ensure any partially opened resources are released
+      if (videoRef.current && videoRef.current.srcObject instanceof MediaStream) {
+        const mediaStream = videoRef.current.srcObject as MediaStream
+        mediaStream.getTracks().forEach(track => track.stop())
+        videoRef.current.srcObject = null
+      }
+      setVideoStream(null)
+      if (scannerRef.current) {
+        scannerRef.current.destroy()
+        scannerRef.current = null
+      }
+
       if (err.name === 'NotAllowedError' || err.message?.includes('Permission denied')) {
         setError('Camera permission denied. Please allow camera access and try again.')
         setHasPermission(false)
@@ -96,11 +115,16 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
       scannerRef.current = null
     }
 
+    const activeStream =
+      (videoRef.current?.srcObject instanceof MediaStream ? (videoRef.current.srcObject as MediaStream) : null) ||
+      videoStream ||
+      null
+
     // Clean up video stream
-    if (videoStream) {
-      videoStream.getTracks().forEach(track => track.stop())
-      setVideoStream(null)
+    if (activeStream) {
+      activeStream.getTracks().forEach(track => track.stop())
     }
+    setVideoStream(null)
 
     // Clear video element
     if (videoRef.current) {
