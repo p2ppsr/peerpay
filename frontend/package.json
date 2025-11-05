@@ -5,7 +5,7 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@babbage/go": "^0.1.8",
+    "@babbage/go": "^0.1.9",
     "@bsv/identity-react": "^1.1.10",
     "@bsv/message-box-client": "^1.4.3",
     "@bsv/sdk": "^1.8.11",
@@ -15,7 +15,7 @@
     "@mui/material": "^5.13.6",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.0",
-    "amountinator-react": "^0.1.38",
+    "amountinator-react": "^0.1.39",
     "qr-scanner": "^1.4.2",
     "qrcode": "^1.5.4",
     "react": "^18.2.0",

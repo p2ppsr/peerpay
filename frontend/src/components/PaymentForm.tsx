@@ -125,12 +125,32 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
               formatOptions={{ useCommas: true, decimalPlaces: 0 }}
             />
           </Box>
-          <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>
+          <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
             sent to:
           </Typography>
+          {recipient?.name && (
+            <Typography
+              variant="subtitle1"
+              noWrap
+              sx={{
+                maxWidth: 360,
+                mx: 'auto',
+                mb: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {recipient.name}
+            </Typography>
+          )}
           <Box sx={{ 
             display: 'flex', 
             justifyContent: 'center',
+            maxWidth: 360,
+            mx: 'auto',
+            width: '100%',
+            overflow: 'hidden',
             '& *': {
               color: 'white !important'
             },
@@ -183,7 +203,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
               {recipient.avatarURL ? null : <PersonIcon />}
             </Avatar>
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'medium' }}>
+              <Typography variant="subtitle1" noWrap sx={{ fontWeight: 'medium', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {recipient.name || 'Unknown Contact'}
               </Typography>
               <Typography

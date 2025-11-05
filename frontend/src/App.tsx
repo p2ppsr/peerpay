@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Container, Typography, Box, LinearProgress } from '@mui/material'
+import { Container, Typography, Box, LinearProgress, Button, CircularProgress } from '@mui/material'
 import PaymentForm from './components/PaymentForm'
 import PaymentList, { Payment } from './components/PaymentList'
 import RecentlySentList from './components/RecentlySentList'
 
 import './App.scss'
+import { toast } from 'react-toastify'
+import { AmountDisplay } from 'amountinator-react'
 
 // Import PeerPayClient
 import { IncomingPayment } from '@bsv/message-box-client'
@@ -40,10 +42,13 @@ const App: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([])
   const [recentlySent, setRecentlySent] = useState<SentPayment[]>([])
   const [loading, setLoading] = useState(false)
+  const [bulkAccepting, setBulkAccepting] = useState(false)
 
   const fetchPayments = useCallback(async () => {
     try {
       setLoading(true)
+
+      await wallet.waitForAuthentication()
       const paymentsToReceive = await peerPayClient.listIncomingPayments(constants.messageboxURL)
 
       const formattedPayments: Payment[] = paymentsToReceive.map((payment) => ({
@@ -116,6 +121,36 @@ const App: React.FC = () => {
     fetchPayments() // Refresh incoming payments
   }
 
+  const handleAcceptAll = async () => {
+    if (!payments.length) return
+    setBulkAccepting(true)
+    const tasks = payments.map(async (p) => {
+      try {
+        const formatted: IncomingPayment = {
+          messageId: p.messageId,
+          sender: p.sender,
+          token: {
+            ...p.token,
+            transaction: Array.from(p.token.transaction)
+          },
+          outputIndex: p.token.outputIndex ?? 0
+        }
+        await peerPayClient.acceptPayment(formatted)
+        setPayments(prev => prev.filter(x => x.messageId !== p.messageId))
+        return { ok: true }
+      } catch (e) {
+        console.error('[APP] Failed to accept payment', p.messageId, e)
+        return { ok: false }
+      }
+    })
+    const results = await Promise.all(tasks)
+    const accepted = results.filter(r => r.ok).length
+    const failed = results.length - accepted
+    if (accepted) toast.success(`Accepted ${accepted} payment${accepted !== 1 ? 's' : ''}.`)
+    if (failed) toast.error(`Failed to accept ${failed} payment${failed !== 1 ? 's' : ''}.`)
+    setBulkAccepting(false)
+  }
+
   return (
     <Container maxWidth='sm'>
       <Box
@@ -154,12 +189,48 @@ const App: React.FC = () => {
         <Typography variant='h6' component='h2' paddingTop={5}>
           Incoming Payments
         </Typography>
+        {payments.length > 0 && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mt: 1,
+              mb: 2,
+              gap: 1,
+              flexWrap: 'wrap'
+            }}
+          >
+            <Typography variant='body2'>
+              {payments.length} payments • Total{' '}
+              <AmountDisplay
+                paymentAmount={payments.reduce((s, p) => s + (p.token.amount || 0), 0)}
+                formatOptions={{ useCommas: true, decimalPlaces: 0 }}
+              />
+            </Typography>
+            <Button
+              variant='contained'
+              color='primary'
+              onClick={handleAcceptAll}
+              disabled={bulkAccepting}
+              size='small'
+            >
+              {bulkAccepting ? (
+                <>
+                  <CircularProgress size={16} color='inherit' sx={{ mr: 1 }} />
+                  Accepting...
+                </>
+              ) : `Accept All (${payments.length})`}
+            </Button>
+          </Box>
+        )}
         {loading && <LinearProgress />}
         <PaymentList
           payments={payments}
           onUpdatePayments={(messageId: string) => {
             setPayments(prev => prev.filter(p => p.messageId !== messageId))
           }}
+          isBulkAccepting={bulkAccepting}
         />
       </Box>
     </Container>

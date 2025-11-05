@@ -24,15 +24,14 @@ export interface Payment {
 interface PaymentListProps {
   payments?: Payment[] // Default to undefined to prevent crashes
   onUpdatePayments: (messageId: string) => void // Function to refresh payment list
+  isBulkAccepting?: boolean
 }
 
-const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePayments }) => {
-  const [processingPaymentId, setProcessingPaymentId] = useState<string | null>(null)
-  const [processingAction, setProcessingAction] = useState<'accept' | 'reject' | null>(null)
+const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePayments, isBulkAccepting = false }) => {
+  const [processingMap, setProcessingMap] = useState<Record<string, 'accept' | 'reject'>>({})
   const handleAccept = async (payment: Payment) => {
     try {
-      setProcessingPaymentId(payment.messageId)
-      setProcessingAction('accept')
+      setProcessingMap(prev => ({ ...prev, [payment.messageId]: 'accept' }))
       
       const formattedPayment: IncomingPayment = {
         messageId: payment.messageId,
@@ -51,15 +50,17 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
       toast.error('Failed to accept payment.')
       console.error('Error accepting payment:', error)
     } finally {
-      setProcessingPaymentId(null)
-      setProcessingAction(null)
+      setProcessingMap(prev => {
+        const next = { ...prev }
+        delete next[payment.messageId]
+        return next
+      })
     }
   }
 
   const handleReject = async (payment: Payment) => {
     try {
-      setProcessingPaymentId(payment.messageId)
-      setProcessingAction('reject')
+      setProcessingMap(prev => ({ ...prev, [payment.messageId]: 'reject' }))
       
       const formattedPayment: IncomingPayment = {
         ...payment,
@@ -77,71 +78,93 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
       toast.error('Failed to reject payment.')
       console.error('Error rejecting payment:', error)
     } finally {
-      setProcessingPaymentId(null)
-      setProcessingAction(null)
+      setProcessingMap(prev => {
+        const next = { ...prev }
+        delete next[payment.messageId]
+        return next
+      })
     }
   }
 
   return (
-    <List>
-      {payments.map((payment) => {
+    <List sx={{ pb: 3 }}>
+      {payments.length === 0 ? (
+        <ListItem>
+          <Typography variant="body2" color="text.secondary">No incoming payments</Typography>
+        </ListItem>
+      ) : payments.map((payment) => {
         console.log('[PaymentList] Displaying payment amount:', payment.token.amount)
 
         return (
           <Box key={payment.messageId}>
             <Divider />
-            <ListItem sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <ListItem sx={{ py: 2 }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr auto', sm: '1fr auto auto' },
+                  alignItems: 'center',
+                  columnGap: 2,
+                  rowGap: { xs: 1, sm: 0 },
+                  width: '100%'
+                }}
+              >
+                {/* Sender Identity (Left Side) */}
+                <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
+                  <IdentityCard identityKey={payment.sender} themeMode="dark" />
+                </Box>
 
-              {/* Sender Identity (Left Side) */}
-              <Box sx={{ display: 'flex', alignItems: 'center', minWidth: '345px', flexShrink: 0 }}>
-                <IdentityCard identityKey={payment.sender} themeMode="dark" />
-              </Box>
+                {/* Payment Amount (Now using AmountDisplay) */}
+                <Box sx={{ textAlign: 'right' }}>
+                  <Typography variant="h6" sx={{ color: 'white' }}>
+                    <AmountDisplay
+                      paymentAmount={payment.token.amount}
+                      formatOptions={{ useCommas: true, decimalPlaces: 0 }}
+                    />
+                    <span style={{ fontSize: '0.8em', opacity: 0.4 }}>
+                    </span>
+                  </Typography>
+                </Box>
 
-              {/* Payment Amount (Now using AmountDisplay) */}
-              <Box sx={{ flexShrink: 0, minWidth: '120px', textAlign: 'right', marginLeft: '50px' }}>
-                <Typography variant="h6" sx={{ color: 'white' }}>
-                  <AmountDisplay
-                    paymentAmount={payment.token.amount}
-                    formatOptions={{ useCommas: true, decimalPlaces: 0 }}
-                  />
-                  {/* Optional debug fallback */}
-                  <span style={{ fontSize: '0.8em', opacity: 0.4 }}>
-                  </span>
-                </Typography>
-              </Box>
-
-              {/* Accept & Reject Buttons (Move to the Far Right) */}
-              <Box sx={{ flexShrink: 0, display: 'flex', gap: 2, marginLeft: '50px' }}>
-                <Button 
-                  onClick={() => handleAccept(payment)} 
-                  color="primary" 
-                  variant="contained" 
-                  size="small"
-                  disabled={processingPaymentId === payment.messageId}
+                {/* Accept & Reject Buttons (Move to the Far Right) */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    gap: 2,
+                    justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+                    gridColumn: { xs: '1 / -1', sm: 'auto' }
+                  }}
                 >
-                  {processingPaymentId === payment.messageId && processingAction === 'accept' ? (
-                    <>
-                      <CircularProgress size={16} color="inherit" sx={{ mr: 1 }} />
-                      Processing...
-                    </>
-                  ) : 'Accept'}
-                </Button>
-                <Button 
-                  onClick={() => handleReject(payment)} 
-                  color="secondary" 
-                  variant="outlined" 
-                  size="small"
-                  disabled={processingPaymentId === payment.messageId}
-                >
-                  {processingPaymentId === payment.messageId && processingAction === 'reject' ? (
-                    <>
-                      <CircularProgress size={16} color="inherit" sx={{ mr: 1 }} />
-                      Processing...
-                    </>
-                  ) : 'Reject'}
-                </Button>
+                  <Button 
+                    onClick={() => handleAccept(payment)} 
+                    color="primary" 
+                    variant="contained" 
+                    size="small"
+                    disabled={isBulkAccepting || !!processingMap[payment.messageId]}
+                  >
+                    {processingMap[payment.messageId] === 'accept' ? (
+                      <>
+                        <CircularProgress size={16} color="inherit" sx={{ mr: 1 }} />
+                        Processing...
+                      </>
+                    ) : 'Accept'}
+                  </Button>
+                  <Button 
+                    onClick={() => handleReject(payment)} 
+                    color="secondary" 
+                    variant="outlined" 
+                    size="small"
+                    disabled={isBulkAccepting || !!processingMap[payment.messageId]}
+                  >
+                    {processingMap[payment.messageId] === 'reject' ? (
+                      <>
+                        <CircularProgress size={16} color="inherit" sx={{ mr: 1 }} />
+                        Processing...
+                      </>
+                    ) : 'Reject'}
+                  </Button>
+                </Box>
               </Box>
-
             </ListItem>
           </Box>
         )
