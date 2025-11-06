@@ -5,7 +5,7 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@babbage/go": "^0.1.9",
+    "@babbage/go": "^0.1.8",
     "@bsv/identity-react": "^1.1.10",
     "@bsv/message-box-client": "^1.4.3",
     "@bsv/sdk": "^1.8.11",

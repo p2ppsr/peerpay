@@ -47,8 +47,6 @@ const App: React.FC = () => {
   const fetchPayments = useCallback(async () => {
     try {
       setLoading(true)
-
-      await wallet.waitForAuthentication()
       const paymentsToReceive = await peerPayClient.listIncomingPayments(constants.messageboxURL)
 
       const formattedPayments: Payment[] = paymentsToReceive.map((payment) => ({
