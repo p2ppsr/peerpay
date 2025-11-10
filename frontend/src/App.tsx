@@ -9,6 +9,7 @@ import { toast } from 'react-toastify'
 import { AmountDisplay } from 'amountinator-react'
 
 // Import PeerPayClient
+import {WalletClient} from '@bsv/sdk'
 import { IncomingPayment } from '@bsv/message-box-client'
 import constants from './utils/constants'
 import { peerPayClient } from './utils/peerPayClient'
@@ -118,7 +119,16 @@ const App: React.FC = () => {
     setRecentlySent(prev => [sentPayment, ...prev.slice(0, 4)]) // Keep only last 5 sent payments
     fetchPayments() // Refresh incoming payments
   }
-
+  useEffect(() => {
+      (async () => {
+        try {
+          const wallet = await new WalletClient()
+          await wallet.waitForAuthentication()
+        } catch (e) {
+          console.error(e)
+        }
+      })()
+    }, [])
   const handleAcceptAll = async () => {
     if (!payments.length) return
     setBulkAccepting(true)
