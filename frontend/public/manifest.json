@@ -52,7 +52,7 @@
             1,
             "messagebox advertisement"
           ],
-          "counterparty": "self",
+          "counterparty": "anyone",
           "description": "Required for messagebox advertisement."
         },
         {
