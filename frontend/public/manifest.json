@@ -49,6 +49,14 @@
         },
         {
           "protocolID": [
+            1,
+            "messagebox advertisement"
+          ],
+          "counterparty": "self",
+          "description": "Required for messagebox advertisement."
+        },
+        {
+          "protocolID": [
             2,
             "identity key retrieval"
           ],
