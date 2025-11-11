@@ -50,6 +50,22 @@
         {
           "protocolID": [
             2,
+            "identity key retrieval"
+          ],
+          "counterparty": "self",
+          "description": "Needs permission for retrieving identity key."
+        },
+        {
+          "protocolID": [
+            1,
+            "action label peerpay"
+          ],
+          "counterparty": "self",
+          "description": "Labeling actions"
+        },
+        {
+          "protocolID": [
+            2,
             "wallet settings"
           ],
           "counterparty": "self",
@@ -62,6 +78,12 @@
           ],
           "counterparty": "self",
           "description": "Needs permission for key derivation relating to hmac generation."
+        }
+      ],
+      "basketAccess": [
+        {
+          "basket": "Contacts",
+          "description": "To check local contacts"
         }
       ]
     }
