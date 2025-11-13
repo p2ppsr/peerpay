@@ -90,7 +90,7 @@
       ],
       "basketAccess": [
         {
-          "basket": "Contacts",
+          "basket": "contacts",
           "description": "To check local contacts"
         },
         {
