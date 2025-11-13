@@ -92,6 +92,10 @@
         {
           "basket": "Contacts",
           "description": "To check local contacts"
+        },
+        {
+          "basket": "wallet settings",
+          "description": "To save preferences for ammountinator"
         }
       ]
     }
