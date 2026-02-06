@@ -66,6 +66,11 @@
           "description": "Needs permission for accessing contact list."
         },
         {
+          "protocolID": [1, "messagebox"],
+          "counterparty": "",
+          "description": "Needs permission for message delivery."
+        },
+        {
           "protocolID": [2, "messagebox"],
           "counterparty": "",
           "description": "Communicate using MessageBox."
