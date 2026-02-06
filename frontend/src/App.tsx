@@ -119,16 +119,6 @@ const App: React.FC = () => {
     setRecentlySent(prev => [sentPayment, ...prev.slice(0, 4)]) // Keep only last 5 sent payments
     fetchPayments() // Refresh incoming payments
   }
-  useEffect(() => {
-      (async () => {
-        try {
-          const wallet = await new WalletClient()
-          await wallet.waitForAuthentication()
-        } catch (e) {
-          console.error(e)
-        }
-      })()
-    }, [])
   const handleAcceptAll = async () => {
     if (!payments.length) return
     setBulkAccepting(true)

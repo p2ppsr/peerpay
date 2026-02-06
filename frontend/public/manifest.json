@@ -57,7 +57,7 @@
         },
         {
           "protocolID": [
-            2,
+            1,
             "identity key retrieval"
           ],
           "counterparty": "self",
@@ -86,6 +86,14 @@
           ],
           "counterparty": "self",
           "description": "Needs permission for key derivation relating to hmac generation."
+        },
+        {
+          "protocolID": [
+            2,
+            "contact"
+          ],
+          "counterparty": "self",
+          "description": "Needs permission for accessing contact list."
         }
       ],
       "basketAccess": [
@@ -97,7 +105,11 @@
           "basket": "wallet settings",
           "description": "To save preferences for ammountinator"
         }
-      ]
+      ],
+      "spendingAuthorization": {
+        "amount": 1000000,
+        "description": "To authorize spending up to a certain amount"
+      }
     }
   }
 }

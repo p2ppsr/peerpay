@@ -5,7 +5,10 @@
   "description": "Peerpay project using CARS and LARS",
   "dependencies": {
     "@bsv/cars-cli": "^1.2.9",
-    "@bsv/lars": "^1.5.7"
+    "@bsv/identity-react": "^1.1.12",
+    "@bsv/lars": "^1.5.7",
+    "@bsv/message-box-client": "^2.0.0",
+    "@bsv/sdk": "^2.0.1"
   },
   "scripts": {
     "lars": "lars",
