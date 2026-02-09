@@ -8,7 +8,7 @@
     "@babbage/go": "^0.1.15",
     "@bsv/identity-react": "^1.1.11",
     "@bsv/message-box-client": "^1.4.5",
-    "@bsv/sdk": "^2.0.0",
+    "@bsv/sdk": "^2.0.2",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.11.16",
