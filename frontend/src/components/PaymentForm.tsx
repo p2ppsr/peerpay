@@ -1,7 +1,12 @@
 import React, { useState } from 'react'
 import { Button, Box, CircularProgress, Avatar, Typography, Paper } from '@mui/material'
-import { IdentitySearchField, IdentityCard } from '@bsv/identity-react'
-import { ContactPage as ContactsIcon, Person as PersonIcon, QrCodeScanner as QrIcon, CheckCircle as CheckIcon } from '@mui/icons-material'
+import { IdentitySearchField } from '@bsv/identity-react'
+import {
+  ContactPage as ContactsIcon,
+  QrCodeScanner as QrIcon,
+  Person as PersonIcon,
+  CheckCircle as CheckIcon
+} from '@mui/icons-material'
 import { toast } from 'react-toastify'
 import { DisplayableIdentity } from '@bsv/sdk'
 import { AmountInputField, AmountDisplay } from 'amountinator-react'
@@ -12,36 +17,40 @@ interface PaymentFormProps {
   onSend: (amount: number, recipient: string) => void
 }
 
+const abbreviateKey = (key: string) => `${key.slice(0, 12)}...${key.slice(-8)}`
+
 const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
   const [recipient, setRecipient] = useState<DisplayableIdentity | null>(null)
-  const [amountInSats, setAmountInSats] = useState(0) // Default to 0
+  const [amountInSats, setAmountInSats] = useState(0)
   const [isSending, setIsSending] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
+  const [contactModalOpenMode, setContactModalOpenMode] = useState<'contacts' | 'scan'>('contacts')
   const [showPaymentSent, setShowPaymentSent] = useState(false)
   const [sentPaymentDetails, setSentPaymentDetails] = useState<{ amount: number; recipient: string } | null>(null)
 
-  // Store identity
   const handleIdentitySelected = (identity: DisplayableIdentity) => {
-    setRecipient(identity) // Store the full identity directly
+    setRecipient(identity)
   }
 
-  // Handle contact selection from modal
   const handleContactSelected = (contact: DisplayableIdentity) => {
     setRecipient(contact)
     setShowContactModal(false)
+  }
+
+  const openContactModal = (mode: 'contacts' | 'scan' = 'contacts') => {
+    setContactModalOpenMode(mode)
+    setShowContactModal(true)
   }
 
   const clearRecipient = () => {
     setRecipient(null)
   }
 
-  // Clear the entire form
   const clearForm = () => {
     setRecipient(null)
     setAmountInSats(0)
   }
 
-  // Handle OK button after payment sent
   const handleOkClick = () => {
     setShowPaymentSent(false)
     setSentPaymentDetails(null)
@@ -56,7 +65,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
       return
     }
 
-    const finalRecipientKey = recipient.identityKey.trim() // Ensure no spaces
+    const finalRecipientKey = recipient.identityKey.trim()
 
     if (finalRecipientKey.length !== 66) {
       toast.error('Invalid recipient key detected!')
@@ -72,17 +81,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
     setIsSending(true)
 
     try {
-      // Use PeerPayClient to send the payment
       await peerPayClient.sendLivePayment({ recipient: finalRecipientKey, amount: amountInSats })
       toast.success('Payment sent successfully!')
 
-      // Store payment details for success view
       setSentPaymentDetails({ amount: amountInSats, recipient: finalRecipientKey })
-      
-      // Show payment sent success view
       setShowPaymentSent(true)
-      
-      // Notify parent component
       onSend(amountInSats, finalRecipientKey)
     } catch (error: any) {
       toast.error('Error sending payment.')
@@ -100,218 +103,152 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
     }
   }
 
-  // Payment Success View
   if (showPaymentSent && sentPaymentDetails) {
+    const recipientName = recipient?.name || 'Recipient'
+    const recipientKey = recipient?.abbreviatedKey || abbreviateKey(sentPaymentDetails.recipient)
+
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 3, py: 4 }}>
+      <Box className='payment-form-root' sx={{ py: 1 }}>
         <Paper
-          elevation={3}
+          className='peerpay-panel'
           sx={{
-            p: 4,
-            borderRadius: 2,
-            backgroundColor: 'success.main',
-            color: 'success.contrastText',
-            textAlign: 'center',
-            minWidth: '300px'
+            p: 3,
+            borderColor: 'rgba(95, 226, 196, 0.45)',
+            textAlign: 'center'
           }}
         >
-          <CheckIcon sx={{ fontSize: 60, mb: 2 }} />
-          <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
-            Payment Sent!
+          <CheckIcon sx={{ fontSize: 58, color: 'primary.main', mb: 1 }} />
+          <Typography variant='h5' sx={{ mb: 1 }}>
+            Payment Sent
           </Typography>
-          <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
-            <AmountDisplay 
-              paymentAmount={sentPaymentDetails.amount}
-              formatOptions={{ useCommas: true, decimalPlaces: 0 }}
-            />
+          <Box className='amount-inline amount-inline-sent' sx={{ mb: 2, justifyContent: 'center' }}>
+            <AmountDisplay paymentAmount={sentPaymentDetails.amount} formatOptions={{ useCommas: true, decimalPlaces: 0 }} />
           </Box>
-          <Typography variant="body2" sx={{ mb: 1, opacity: 0.9 }}>
-            sent to:
+          <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
+            Recipient
           </Typography>
-          {recipient?.name && (
-            <Typography
-              variant="subtitle1"
-              noWrap
-              sx={{
-                maxWidth: 360,
-                mx: 'auto',
-                mb: 1,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              {recipient.name}
-            </Typography>
-          )}
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'center',
-            maxWidth: 360,
-            mx: 'auto',
-            width: '100%',
-            overflow: 'hidden',
-            '& *': {
-              color: 'white !important'
-            },
-            '& .MuiTypography-root': {
-              color: 'white !important'
-            }
-          }}>
-            <IdentityCard 
-              identityKey={sentPaymentDetails.recipient} 
-              themeMode="light"
-            />
+          <Box
+            sx={{
+              maxWidth: 380,
+              mx: 'auto',
+              p: 1.5,
+              borderRadius: 2,
+              border: '1px solid rgba(168, 205, 242, 0.2)',
+              bgcolor: 'rgba(9, 18, 33, 0.52)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.25,
+              textAlign: 'left'
+            }}
+          >
+            <Avatar src={recipient?.avatarURL} sx={{ width: 44, height: 44, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+              {(recipientName || '?').slice(0, 1).toUpperCase()}
+            </Avatar>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant='subtitle1' sx={{ fontWeight: 700 }} noWrap>
+                {recipientName}
+              </Typography>
+              <Typography variant='body2' color='text.secondary' sx={{ fontFamily: '"IBM Plex Mono", "Consolas", monospace' }} noWrap>
+                {recipientKey}
+              </Typography>
+            </Box>
           </Box>
         </Paper>
-        
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleOkClick}
-          sx={{ px: 4, py: 1.5, fontSize: '1.1rem' }}
-        >
-          OK
+
+        <Button className='send-payment-btn' variant='contained' onClick={handleOkClick}>
+          Send Another Payment
         </Button>
       </Box>
     )
   }
 
-  // Regular Form View
   return (
-    <Box component='form' onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
-      {/* Recipient Selection */}
-      <Box sx={{ width: '100%', maxWidth: '350px' }}>
-        {recipient ? (
-          // Show selected recipient
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              p: 2,
-              border: '1px solid',
-              borderColor: 'primary.main',
-              borderRadius: 1,
-              backgroundColor: 'rgba(25, 118, 210, 0.1)',
-            }}
-          >
-            <Avatar
-              src={recipient.avatarURL}
-              sx={{ bgcolor: 'primary.main' }}
+    <Box component='form' onSubmit={handleSubmit} className='payment-form-root'>
+      {recipient ? (
+        <Box className='recipient-card'>
+          <Avatar src={recipient.avatarURL} sx={{ bgcolor: 'primary.main', width: 44, height: 44 }}>
+            {recipient.avatarURL ? null : <PersonIcon />}
+          </Avatar>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography variant='subtitle1' noWrap sx={{ fontWeight: 600 }}>
+              {recipient.name || 'Unknown Contact'}
+            </Typography>
+            <Typography
+              variant='body2'
+              color='text.secondary'
+              sx={{
+                fontFamily: '"IBM Plex Mono", "Consolas", monospace',
+                fontSize: '0.78rem',
+                wordBreak: 'break-all'
+              }}
             >
-              {recipient.avatarURL ? null : <PersonIcon />}
-            </Avatar>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="subtitle1" noWrap sx={{ fontWeight: 'medium', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {recipient.name || 'Unknown Contact'}
-              </Typography>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{
-                  fontFamily: 'monospace',
-                  fontSize: '0.8rem',
-                  wordBreak: 'break-all',
-                }}
-              >
-                {recipient.abbreviatedKey || recipient.identityKey}
-              </Typography>
-            </Box>
-            <Button
-              size="small"
-              onClick={clearRecipient}
-              sx={{ minWidth: 'auto' }}
-            >
-              Change
-            </Button>
+              {recipient.abbreviatedKey || recipient.identityKey}
+            </Typography>
           </Box>
-        ) : (
-          // Show recipient selection options
-          <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+          <Button size='small' onClick={clearRecipient}>
+            Change
+          </Button>
+        </Box>
+      ) : (
+        <>
+          <Box className='recipient-options-grid'>
             <Button
-              variant="outlined"
+              className='recipient-option-btn'
+              variant='outlined'
               startIcon={<ContactsIcon />}
-              onClick={() => setShowContactModal(true)}
-              sx={{ flex: 1 }}
+              onClick={() => openContactModal('contacts')}
             >
               Select Contact
             </Button>
             <Button
-              variant="outlined"
+              className='recipient-option-btn'
+              variant='outlined'
               startIcon={<QrIcon />}
-              onClick={() => setShowContactModal(true)}
-              sx={{ flex: 1 }}
+              onClick={() => openContactModal('scan')}
             >
               Scan QR
             </Button>
           </Box>
-        )}
-
-        {/* Fallback to identity search */}
-        {!recipient && (
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1, textAlign: 'center' }}>
-              Or search for an identity:
-            </Typography>
+          <p className='soft-note'>Search for an identity if the recipient is not in your contacts.</p>
+          <Box className='search-shell'>
             <IdentitySearchField
               onIdentitySelected={handleIdentitySelected}
               appName='PeerPay'
+              width='100%'
+              font='"Sora", "Avenir Next", "Segoe UI", sans-serif'
             />
           </Box>
-        )}
-      </Box>
+        </>
+      )}
 
-      <Box sx={{ width: '100%', maxWidth: '350px' }}>
-        <Box
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: '#222', // dark input
-              color: '#fff',
-            },
-            '& .MuiInputBase-input': {
-              color: '#fff', // typed text
-            },
-            '& .MuiInputLabel-root': {
-              color: '#ccc', // label color
-            },
-            '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: '#555',
-            },
-            '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: '#888',
-            },
+      <Box className='amount-shell'>
+        <AmountInputField
+          onSatoshisChange={(sats: number | null) => {
+            setAmountInSats(typeof sats === 'number' ? sats : 0)
           }}
-        >
-          <AmountInputField
-            onSatoshisChange={(sats: number) => {
-              console.log('[AmountInputField] Satoshis:', sats)
-              setAmountInSats(sats)
-            }}
-          />
-        </Box>
+        />
       </Box>
-
 
       <Button
-        sx={{ width: '10em' }}
+        className='send-payment-btn'
         type='submit'
         variant='contained'
         disabled={isSending}
+        fullWidth
       >
         {isSending ? (
           <>
-            <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+            <CircularProgress size={20} color='inherit' sx={{ mr: 1 }} />
             Sending...
           </>
-        ) : 'Send'}
+        ) : 'Send Payment'}
       </Button>
 
-      {/* Contact Modal */}
       <ContactModal
         open={showContactModal}
         onClose={() => setShowContactModal(false)}
         onContactSelected={handleContactSelected}
+        openMode={contactModalOpenMode}
       />
     </Box>
   )

@@ -20,6 +20,10 @@ root.render(
       pauseOnFocusLoss
       draggable
       pauseOnHover
+      theme="dark"
+      toastClassName="peerpay-toast"
+      bodyClassName="peerpay-toast-body"
+      progressClassName="peerpay-toast-progress"
     />
     <CssBaseline />
     <App />

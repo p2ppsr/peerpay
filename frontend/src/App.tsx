@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Container, Typography, Box, LinearProgress, Button, CircularProgress } from '@mui/material'
+import { Container, Typography, Box, LinearProgress, Button, CircularProgress, Paper } from '@mui/material'
 import PaymentForm from './components/PaymentForm'
 import PaymentList, { Payment } from './components/PaymentList'
 import RecentlySentList from './components/RecentlySentList'
@@ -9,7 +9,6 @@ import { toast } from 'react-toastify'
 import { AmountDisplay } from 'amountinator-react'
 
 // Import PeerPayClient
-import {WalletClient} from '@bsv/sdk'
 import { IncomingPayment } from '@bsv/message-box-client'
 import constants from './utils/constants'
 import { peerPayClient } from './utils/peerPayClient'
@@ -115,7 +114,7 @@ const App: React.FC = () => {
       recipient,
       timestamp: Date.now()
     }
-    
+
     setRecentlySent(prev => [sentPayment, ...prev.slice(0, 4)]) // Keep only last 5 sent payments
     fetchPayments() // Refresh incoming payments
   }
@@ -150,86 +149,77 @@ const App: React.FC = () => {
   }
 
   return (
-    <Container maxWidth='sm'>
-      <Box
-        sx={{
-          bgcolor: 'background.default',
-          minHeight: '100vh',
-          color: 'text.primary',
-          pt: 5
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            pt: 4
-          }}
-        >
-          <img src='/PeerPay.png' width={'300px'} />
-          <Typography variant='body1' paddingTop={5}>
-            Simple Peer-to-peer Payments
-          </Typography>
-          <PaymentForm onSend={handlePaymentSent} />
+    <Container maxWidth='sm' className='peerpay-app'>
+      <Box className='peerpay-shell'>
+        <Box className='peerpay-hero'>
+          <img className='peerpay-logo' src='/PeerPay.png' alt='PeerPay' />
+          <Typography className='peerpay-subtitle'>Simple Peer-to-peer Payments</Typography>
         </Box>
 
+        <Paper className='peerpay-panel' sx={{ p: { xs: 2, sm: 2.5 } }}>
+          <PaymentForm onSend={handlePaymentSent} />
+        </Paper>
+
         {recentlySent.length > 0 && (
-          <>
-            <Typography variant='h6' component='h2' paddingTop={5}>
+          <Paper className='peerpay-panel peerpay-section'>
+            <Typography variant='h6' component='h2' className='peerpay-section-title'>
               Recently Sent
             </Typography>
             <RecentlySentList payments={recentlySent} />
-          </>
+          </Paper>
         )}
 
-        <Typography variant='h6' component='h2' paddingTop={5}>
-          Incoming Payments
-        </Typography>
-        {payments.length > 0 && (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              mt: 1,
-              mb: 2,
-              gap: 1,
-              flexWrap: 'wrap'
-            }}
-          >
-            <Typography variant='body2'>
-              {payments.length} payments • Total{' '}
-              <AmountDisplay
-                paymentAmount={payments.reduce((s, p) => s + (p.token.amount || 0), 0)}
-                formatOptions={{ useCommas: true, decimalPlaces: 0 }}
-              />
-            </Typography>
-            <Button
-              variant='contained'
-              color='primary'
-              onClick={handleAcceptAll}
-              disabled={bulkAccepting}
-              size='small'
+        <Paper className='peerpay-panel peerpay-section'>
+          <Typography variant='h6' component='h2' className='peerpay-section-title'>
+            Incoming Payments
+          </Typography>
+          {payments.length > 0 && (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 2,
+                gap: 1,
+                flexWrap: 'wrap'
+              }}
             >
-              {bulkAccepting ? (
-                <>
-                  <CircularProgress size={16} color='inherit' sx={{ mr: 1 }} />
-                  Accepting...
-                </>
-              ) : `Accept All (${payments.length})`}
-            </Button>
-          </Box>
-        )}
-        {loading && <LinearProgress />}
-        <PaymentList
-          payments={payments}
-          onUpdatePayments={(messageId: string) => {
-            setPayments(prev => prev.filter(p => p.messageId !== messageId))
-          }}
-          isBulkAccepting={bulkAccepting}
-        />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                <Typography variant='body2' color='text.secondary' component='span'>
+                  {payments.length} payment{payments.length !== 1 ? 's' : ''} • Total
+                </Typography>
+                <Box className='amount-inline amount-inline-total'>
+                  <AmountDisplay
+                    paymentAmount={payments.reduce((s, p) => s + (p.token.amount || 0), 0)}
+                    formatOptions={{ useCommas: true, decimalPlaces: 0 }}
+                  />
+                </Box>
+              </Box>
+              <Button
+                variant='contained'
+                color='primary'
+                onClick={handleAcceptAll}
+                disabled={bulkAccepting}
+                size='small'
+              >
+                {bulkAccepting ? (
+                  <>
+                    <CircularProgress size={16} color='inherit' sx={{ mr: 1 }} />
+                    Accepting...
+                  </>
+                ) : `Accept All (${payments.length})`}
+              </Button>
+            </Box>
+          )}
+          {loading && <LinearProgress sx={{ mb: 2, borderRadius: 999, bgcolor: 'rgba(132, 167, 214, 0.2)' }} />}
+          <PaymentList
+            payments={payments}
+            onUpdatePayments={(messageId: string) => {
+              setPayments(prev => prev.filter(p => p.messageId !== messageId))
+            }}
+            isBulkAccepting={bulkAccepting}
+          />
+        </Paper>
       </Box>
     </Container>
   )
