@@ -21,23 +21,6 @@ export interface SentPayment {
   id: string
 }
 
-const originalLog = console.log
-console.log = (...args) => {
-  const formattedArgs = args.map(arg => {
-    if (typeof arg === 'object') {
-      try {
-        return JSON.stringify(arg, null, 2)
-      } catch (e) {
-        return '[Unstringifiable object]'
-      }
-    }
-    return arg
-  })
-
-  const stack = new Error().stack?.split('\n')[2]?.trim()
-  originalLog('[LOG]', ...formattedArgs, '\n→', stack)
-}
-
 const App: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([])
   const [recentlySent, setRecentlySent] = useState<SentPayment[]>([])
