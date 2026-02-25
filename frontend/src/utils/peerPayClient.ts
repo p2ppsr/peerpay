@@ -12,7 +12,7 @@ const babbageGo = new BabbageGo(new WalletClient(), {
 const peerPayClient = new PeerPayClient({
   messageBoxHost: constants.messageboxURL,
   walletClient: babbageGo,
-  enableLogging: true
+  enableLogging: false
 })
 
 export { babbageGo, peerPayClient }
