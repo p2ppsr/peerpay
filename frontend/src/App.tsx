@@ -75,7 +75,12 @@ const App: React.FC = () => {
     let isSubscribed = true
     const listenForPayments = async () => {
       try {
-        await peerPayClient.initializeConnection()
+        // Pre-initialize overlay advertisement + WebSocket connection in parallel
+        // so the first sendLivePayment doesn't pay the init() latency.
+        await Promise.all([
+          peerPayClient.init(),
+          peerPayClient.initializeConnection()
+        ])
 
         await peerPayClient.listenForLivePayments({
           overrideHost: constants.messageboxURL,
