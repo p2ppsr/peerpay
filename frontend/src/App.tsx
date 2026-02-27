@@ -6,7 +6,7 @@ import RecentlySentList from './components/RecentlySentList'
 
 import './App.scss'
 import { toast } from 'react-toastify'
-import { AmountDisplay } from 'amountinator-react'
+import { AmountDisplay } from '@bsv/amountinator-react'
 
 // Import PeerPayClient
 import { IncomingPayment } from '@bsv/message-box-client'
@@ -26,6 +26,11 @@ const App: React.FC = () => {
   const [recentlySent, setRecentlySent] = useState<SentPayment[]>([])
   const [loading, setLoading] = useState(false)
   const [bulkAccepting, setBulkAccepting] = useState(false)
+
+  const totalIncomingAmount = payments.reduce((sum, payment) => {
+    const amount = Number(payment.token.amount)
+    return sum + (Number.isFinite(amount) ? amount : 0)
+  }, 0)
 
   const fetchPayments = useCallback(async () => {
     try {
@@ -178,8 +183,8 @@ const App: React.FC = () => {
                 </Typography>
                 <Box className='amount-inline amount-inline-total'>
                   <AmountDisplay
-                    paymentAmount={payments.reduce((s, p) => s + (p.token.amount || 0), 0)}
-                    formatOptions={{ useCommas: true, decimalPlaces: 0 }}
+                    paymentAmount={totalIncomingAmount}
+                    formatOptions={{ useCommas: true, decimalPlaces: 2 }}
                   />
                 </Box>
               </Box>

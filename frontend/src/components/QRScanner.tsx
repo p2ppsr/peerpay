@@ -37,17 +37,74 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
       setIsLoading(true)
       setError('')
 
-      // Get camera stream directly for better compatibility
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment',
-          width: { ideal: 1280, max: 1920 },
-          height: { ideal: 720, max: 1080 },
-        },
+      if (!window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        throw new Error('Camera access requires HTTPS or localhost. Please use a secure connection.')
+      }
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera API is not available in this browser.')
+      }
+
+      if (scannerRef.current) {
+        scannerRef.current.destroy()
+        scannerRef.current = null
+      }
+
+      if (videoRef.current.srcObject instanceof MediaStream) {
+        const existingStream = videoRef.current.srcObject as MediaStream
+        existingStream.getTracks().forEach(track => track.stop())
+        videoRef.current.srcObject = null
+      }
+
+      let stream: MediaStream
+
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1280, max: 1920 },
+            height: { ideal: 720, max: 1080 }
+          }
+        })
+      } catch {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      }
+
+      // Set up video element with the stream and ensure playback starts
+      videoRef.current.srcObject = stream
+      videoRef.current.setAttribute('playsinline', 'true')
+      videoRef.current.muted = true
+
+      await new Promise<void>((resolve, reject) => {
+        const video = videoRef.current
+        if (!video) {
+          reject(new Error('Video element not available'))
+          return
+        }
+
+        if (video.readyState >= 2) {
+          resolve()
+          return
+        }
+
+        const timeoutId = window.setTimeout(() => {
+          video.onloadedmetadata = null
+          reject(new Error('Timed out while waiting for camera stream'))
+        }, 7000)
+
+        video.onloadedmetadata = () => {
+          window.clearTimeout(timeoutId)
+          video.onloadedmetadata = null
+          resolve()
+        }
       })
 
-      // Set up video element with the stream so the scanner can reuse it
-      videoRef.current.srcObject = stream
+      await videoRef.current.play()
+
+      // Persist the stream to ensure it can be stopped on cleanup
+      setVideoStream(stream)
+      setHasPermission(true)
+      setIsLoading(false)
 
       // Initialize QR scanner on the video element
       const scanner = new QrScanner(
@@ -61,7 +118,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
           preferredCamera: 'environment',
           highlightScanRegion: true,
           highlightCodeOutline: true,
-          returnDetailedScanResult: true,
+          returnDetailedScanResult: true
         }
       )
 
@@ -69,13 +126,12 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
       scanner.setInversionMode('both')
       scannerRef.current = scanner
 
-      await scanner.start()
-
-      // Persist the stream to ensure it can be stopped on cleanup
-      setVideoStream(stream)
-
-      setHasPermission(true)
-      setIsLoading(false)
+      await Promise.race([
+        scanner.start(),
+        new Promise((_, reject) => {
+          window.setTimeout(() => reject(new Error('Camera initialization timed out. Please try again.')), 7000)
+        })
+      ])
 
     } catch (err: any) {
       // Ensure any partially opened resources are released
@@ -99,7 +155,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
         setError('Camera not supported in this browser. Try using Chrome, Firefox, or Safari.')
       } else if (err.name === 'NotReadableError') {
         setError('Camera is already in use by another application')
-      } else if (err.message?.includes('secure context')) {
+      } else if (err.message?.includes('secure context') || err.message?.includes('HTTPS or localhost')) {
         setError('Camera access requires HTTPS or localhost. Please use a secure connection.')
       } else {
         setError(`Failed to initialize camera: ${err.message || 'Unknown error'}`)
@@ -211,11 +267,16 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
         {isLoading && (
           <Box
             sx={{
+              position: 'absolute',
+              inset: 0,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               gap: 2,
               color: 'white',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(0, 0, 0, 0.55)',
+              zIndex: 2
             }}
           >
             <CircularProgress color="inherit" />
@@ -293,7 +354,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose, isOpen }) => {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            display: isLoading || error ? 'none' : 'block',
+            display: error ? 'none' : 'block'
           }}
           playsInline
           muted

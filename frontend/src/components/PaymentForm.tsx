@@ -9,7 +9,7 @@ import {
 } from '@mui/icons-material'
 import { toast } from 'react-toastify'
 import { DisplayableIdentity } from '@bsv/sdk'
-import { AmountInputField, AmountDisplay } from 'amountinator-react'
+import { AmountInputField, AmountDisplay } from '@bsv/amountinator-react'
 import ContactModal from './ContactModal'
 import { peerPayClient } from '../utils/peerPayClient'
 

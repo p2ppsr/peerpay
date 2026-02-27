@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
-import { List, ListItem, Button, Box, Typography, CircularProgress, Avatar } from '@mui/material'
+import { List, ListItem, Button, Box, Typography, CircularProgress } from '@mui/material'
 import { IncomingPayment } from '@bsv/message-box-client'
 import { toast } from 'react-toastify'
-import { AmountDisplay } from 'amountinator-react'
+import { AmountDisplay } from '@bsv/amountinator-react'
+import { IdentityCard } from '@bsv/identity-react'
 import { peerPayClient } from '../utils/peerPayClient'
 
 export interface Payment {
@@ -24,8 +25,6 @@ interface PaymentListProps {
   onUpdatePayments: (messageId: string) => void
   isBulkAccepting?: boolean
 }
-
-const abbreviateKey = (key: string) => `${key.slice(0, 10)}...${key.slice(-8)}`
 
 const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePayments, isBulkAccepting = false }) => {
   const [processingMap, setProcessingMap] = useState<Record<string, 'accept' | 'reject'>>({})
@@ -117,17 +116,20 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
               alignItems: 'center'
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
-              <Avatar sx={{ width: 34, height: 34, bgcolor: 'rgba(95, 226, 196, 0.22)', color: 'primary.main' }}>
-                {payment.sender.slice(0, 2).toUpperCase()}
-              </Avatar>
+            <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
               <Box sx={{ minWidth: 0 }}>
-                <Typography variant='subtitle2' sx={{ fontWeight: 600 }} noWrap>
-                  {abbreviateKey(payment.sender)}
-                </Typography>
-                <Typography variant='caption' color='text.secondary' noWrap>
-                  Incoming transfer
-                </Typography>
+                <Box
+                  sx={{
+                    '& .MuiTypography-h6': {
+                      color: 'text.primary !important'
+                    },
+                    '& .MuiTypography-body2': {
+                      color: 'text.secondary !important'
+                    }
+                  }}
+                >
+                  <IdentityCard identityKey={payment.sender} themeMode='dark' />
+                </Box>
               </Box>
             </Box>
 
@@ -138,7 +140,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
                 </Typography>
                 <AmountDisplay
                   paymentAmount={payment.token.amount}
-                  formatOptions={{ useCommas: true, decimalPlaces: 0 }}
+                  formatOptions={{ useCommas: true, decimalPlaces: 2 }}
                 />
               </Box>
             </Box>

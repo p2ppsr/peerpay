@@ -7,14 +7,13 @@ import {
   Avatar
 } from '@mui/material'
 import { Send as SendIcon } from '@mui/icons-material'
-import { AmountDisplay } from 'amountinator-react'
+import { AmountDisplay } from '@bsv/amountinator-react'
+import { IdentityCard } from '@bsv/identity-react'
 import { SentPayment } from '../App'
 
 interface RecentlySentListProps {
   payments: SentPayment[]
 }
-
-const abbreviateKey = (key: string) => `${key.substring(0, 10)}...${key.substring(key.length - 8)}`
 
 const RecentlySentList: React.FC<RecentlySentListProps> = ({ payments }) => {
   const formatTime = (timestamp: number): string => {
@@ -47,9 +46,18 @@ const RecentlySentList: React.FC<RecentlySentListProps> = ({ payments }) => {
               <SendIcon sx={{ fontSize: 18 }} />
             </Avatar>
             <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography variant='subtitle2' sx={{ fontWeight: 600 }} noWrap>
-                {abbreviateKey(payment.recipient)}
-              </Typography>
+              <Box
+                sx={{
+                  '& .MuiTypography-h6': {
+                    color: 'text.primary !important'
+                  },
+                  '& .MuiTypography-body2': {
+                    color: 'text.secondary !important'
+                  }
+                }}
+              >
+                <IdentityCard identityKey={payment.recipient} themeMode='dark' />
+              </Box>
               <Typography variant='caption' color='text.secondary'>
                 {formatTime(payment.timestamp)}
               </Typography>

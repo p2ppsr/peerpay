@@ -6,8 +6,9 @@
   "private": true,
   "dependencies": {
     "@babbage/go": "^0.1.16",
+    "@bsv/amountinator-react": "^1.0.1",
     "@bsv/identity-react": "^1.1.14",
-    "@bsv/message-box-client": "^2.0.2",
+    "@bsv/message-box-client": "^2.0.4",
     "@bsv/sdk": "^2.0.4",
     "@bsv/uhrp-react": "^1.0.6",
     "@emotion/react": "^11.11.1",
@@ -16,7 +17,6 @@
     "@mui/material": "^5.13.6",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.11.0",
-    "amountinator-react": "^0.1.40",
     "qr-scanner": "^1.4.2",
     "qrcode": "^1.5.4",
     "react": "^18.2.0",
