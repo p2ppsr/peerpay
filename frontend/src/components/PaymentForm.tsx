@@ -124,7 +124,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
             Payment Sent
           </Typography>
           <Box className='amount-inline amount-inline-sent' sx={{ mb: 2, justifyContent: 'center' }}>
-            <AmountDisplay paymentAmount={sentPaymentDetails.amount} formatOptions={{ useCommas: true, decimalPlaces: 0 }} />
+            <AmountDisplay paymentAmount={sentPaymentDetails.amount} formatOptions={{ useCommas: true, decimalPlaces: 2 }} />
           </Box>
           <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
             Recipient
