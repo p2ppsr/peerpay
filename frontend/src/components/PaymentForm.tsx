@@ -12,6 +12,7 @@ import { DisplayableIdentity } from '@bsv/sdk'
 import { AmountInputField, AmountDisplay } from '@bsv/amountinator-react'
 import ContactModal from './ContactModal'
 import { peerPayClient } from '../utils/peerPayClient'
+import { playSfx } from '../utils/sfx'
 
 interface PaymentFormProps {
   onSend: (amount: number, recipient: string) => void
@@ -83,6 +84,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onSend }) => {
     try {
       await peerPayClient.sendLivePayment({ recipient: finalRecipientKey, amount: amountInSats })
       toast.success('Payment sent successfully!')
+      void playSfx('send')
 
       setSentPaymentDetails({ amount: amountInSats, recipient: finalRecipientKey })
       setShowPaymentSent(true)

@@ -12,6 +12,7 @@ import { AmountDisplay } from '@bsv/amountinator-react'
 import { IncomingPayment } from '@bsv/message-box-client'
 import constants from './utils/constants'
 import { peerPayClient } from './utils/peerPayClient'
+import { playSfx } from './utils/sfx'
 
 // Interface for sent payments
 export interface SentPayment {
@@ -84,6 +85,9 @@ const App: React.FC = () => {
 
             setPayments((prevPayments) => {
               const exists = prevPayments.some(existing => existing.messageId === formattedPayment.messageId)
+              if (!exists) {
+                void playSfx('live')
+              }
               return exists ? prevPayments : [...prevPayments, formattedPayment]
             })
           }

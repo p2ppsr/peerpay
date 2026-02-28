@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import { AmountDisplay } from '@bsv/amountinator-react'
 import { IdentityCard } from '@bsv/identity-react'
 import { peerPayClient } from '../utils/peerPayClient'
+import { playSfx } from '../utils/sfx'
 
 export interface Payment {
   messageId: string
@@ -45,6 +46,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
 
       await peerPayClient.acceptPayment(formattedPayment)
       toast.success('Payment accepted!')
+      void playSfx('receive')
       onUpdatePayments(payment.messageId)
     } catch (error) {
       toast.error('Failed to accept payment.')
@@ -73,6 +75,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
 
       await peerPayClient.rejectPayment(formattedPayment)
       toast.info('Payment rejected.')
+      void playSfx('reject')
       onUpdatePayments(payment.messageId)
     } catch (error) {
       toast.error('Failed to reject payment.')
