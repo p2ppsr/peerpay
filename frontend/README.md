@@ -3,6 +3,8 @@
 A React UI for **peer-to-peer Bitcoin payments** built on top of the [PeerPayClient](https://github.com/bitcoin-sv/p2p) from the `@bsv/p2p` package and the BSV blockchain.  
 This is an **example app** demonstrating how to integrate `peerpay-client` into a real React frontend using modern libraries like MUI and `identity-react`.
 
+PeerPay is a Babbage-operated application example. It uses the current BSV TypeScript SDK and BRC-100 wallet model; compatible wallet distributions can implement the same interface with their own branding and service defaults.
+
 ---
 
 ## Features
