@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { compactPromptIcons } from './tooling/compact-prompt-icons.mjs'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [compactPromptIcons(), react()],
   build: {
     outDir: 'build'
   },
