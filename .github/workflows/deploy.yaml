@@ -1,6 +1,8 @@
 name: Deploy with CARS
 
 on:
+  pull_request:
+    branches: [master]
   push:
     branches:
       - master
@@ -14,8 +16,38 @@ permissions:
   contents: read
 
 jobs:
+  verify:
+    name: Verify frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npx tsc --noEmit
+      - run: npm run build
+      - name: Bound startup JavaScript
+        run: |
+          node --input-type=module - <<'JS'
+          import { readdirSync, statSync } from 'node:fs'
+          const files = readdirSync('build/assets').filter(name => /^index-.*\.js$/.test(name))
+          if (files.length !== 1 || statSync('build/assets/' + files[0]).size > 2200000) {
+            throw new Error('PeerPay startup bundle exceeds its reviewed 2.2 MB budget')
+          }
+          JS
+
   deploy:
     name: Verify and deploy
+    if: github.event_name != 'pull_request'
+    needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
