@@ -31,7 +31,22 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
-      - run: npm test
+      - run: npm test -- --reporter=json --outputFile=payment-test-results.json
+      - name: Require complete passing payment source coverage
+        run: |
+          node --input-type=module - <<'JS'
+          import assert from 'node:assert/strict'
+          import fs from 'node:fs'
+          const report = JSON.parse(fs.readFileSync('payment-test-results.json', 'utf8'))
+          assert.equal(report.success, true)
+          assert.equal(report.numFailedTests, 0)
+          assert.equal(report.numPendingTests, 0)
+          assert.equal(report.numTodoTests, 0)
+          assert(report.numPassedTests >= 28)
+          const safety = report.testResults.find(result => result.name.endsWith('/paymentCompatibilitySafety.test.ts'))
+          assert(safety && safety.assertionResults.length === 9)
+          assert(safety.assertionResults.every(result => result.status === 'passed'))
+          JS
       - run: npx tsc --noEmit
       - run: npm run build
       - name: Bound startup JavaScript
@@ -43,6 +58,13 @@ jobs:
             throw new Error('PeerPay startup bundle exceeds its reviewed 2.2 MB budget')
           }
           JS
+
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: payment-source-results
+          path: frontend/payment-test-results.json
+          if-no-files-found: warn
 
   deploy:
     name: Verify and deploy
