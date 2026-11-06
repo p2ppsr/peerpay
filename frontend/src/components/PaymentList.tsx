@@ -162,6 +162,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
                 </Typography>
                 <SatoshiAmount amount={payment.token.amount} />
               </Box>
+              {payment.token.amount < 2000 && <Typography variant='caption' color='text.secondary'>Too small to return after the fee. Accept it to keep the funds.</Typography>}
             </Box>
 
             <Box
@@ -190,7 +191,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments = [], onUpdatePaymen
                 color='secondary'
                 variant='outlined'
                 size='small'
-                disabled={isBulkAccepting || !!processingMap[payment.messageId]}
+                disabled={isBulkAccepting || !!processingMap[payment.messageId] || !Number.isSafeInteger(payment.token.amount) || payment.token.amount < 2000}
               >
                 {processingMap[payment.messageId] === 'reject' ? (
                   <>
