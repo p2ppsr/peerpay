@@ -23,7 +23,8 @@ export function prepareIncomingPayment(payment: IncomingPayment): {
 }
 
 function assertPaymentAccepted(result: unknown): void {
-  if (typeof result === 'string' || result == null || typeof result !== 'object') {
+  if (typeof result === 'string' || result == null || typeof result !== 'object' ||
+      (result as { paymentResult?: { accepted?: unknown } }).paymentResult?.accepted !== true) {
     throw new Error(typeof result === 'string' ? result : 'The wallet did not confirm the payment.')
   }
 }
@@ -40,12 +41,13 @@ export async function rejectIncomingPayment(payment: IncomingPayment): Promise<P
   const amount = prepared.payment.token.amount
   if (!Number.isSafeInteger(amount) || amount <= 0) throw new Error('The payment amount is invalid.')
 
-  // Tiny payments cannot cover the library's refund fee, so rejecting only
-  // acknowledges them. Larger payments must be accepted successfully before
+  // The SDK's tiny-payment rejection acknowledges without crediting or returning
+  // funds. Keep the message queued so the recipient can explicitly accept it.
+  // Larger payments must be accepted successfully before
   // refunding; the upstream rejectPayment method does not currently enforce
   // that result and could otherwise refund from unrelated wallet funds.
   if (amount - 1_000 < 1_000) {
-    await peerPayClient.rejectPayment(prepared.payment)
+    throw new Error('This payment is too small to return after the fee. It has been kept; accept it to add it to your balance.')
   } else {
     const result = await peerPayClient.acceptPayment(prepared.payment)
     assertPaymentAccepted(result)
