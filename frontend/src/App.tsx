@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { Container, Typography, Box, LinearProgress, Button, CircularProgress, Paper } from '@mui/material'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { Alert, Container, Typography, Box, LinearProgress, Button, CircularProgress, Paper } from '@mui/material'
 import PaymentForm from './components/PaymentForm'
 import PaymentList, { Payment } from './components/PaymentList'
 import RecentlySentList from './components/RecentlySentList'
@@ -27,7 +27,8 @@ export interface SentPayment {
 const App: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([])
   const [recentlySent, setRecentlySent] = useState<SentPayment[]>([])
-  const [loading, setLoading] = useState(false)
+  const [inboxStatus, setInboxStatus] = useState<'loading' | 'ready' | 'failed'>('loading')
+  const inboxRequest = useRef(0)
   const [bulkAccepting, setBulkAccepting] = useState(false)
 
   const totalIncomingAmount = payments.reduce((sum, payment) => {
@@ -36,10 +37,12 @@ const App: React.FC = () => {
   }, 0)
 
   const fetchPayments = useCallback(async () => {
+    const request = ++inboxRequest.current
+    setInboxStatus('loading')
     try {
-      setLoading(true)
       const paymentsToReceive = await peerPayClient.listIncomingPayments(constants.messageboxURL)
 
+      if (request !== inboxRequest.current) return
       const formattedPayments: Payment[] = paymentsToReceive.map((payment) => ({
         ...payment,
         token: {
@@ -49,21 +52,23 @@ const App: React.FC = () => {
       }))
 
       setPayments(formattedPayments)
+      setInboxStatus('ready')
       reportTelemetryEvent('payments.inbox_loaded', {
         surface: 'inbox',
         context: { paymentCount: formattedPayments.length }
       })
     } catch (error) {
+      if (request !== inboxRequest.current) return
+      setInboxStatus('failed')
       console.error('[APP] Error fetching incoming payments:', error)
       reportTelemetryError('payments.inbox_load_failed', error, { surface: 'inbox' })
-    } finally {
-      setLoading(false)
     }
   }, [])
 
   // Load initial payments
   useEffect(() => {
-    fetchPayments()
+    void fetchPayments()
+    return () => { inboxRequest.current++ }
   }, [fetchPayments])
 
   // Listen for live payments
@@ -224,14 +229,27 @@ const App: React.FC = () => {
               </Button>
             </Box>
           )}
-          {loading && <LinearProgress sx={{ mb: 2, borderRadius: 999, bgcolor: 'rgba(132, 167, 214, 0.2)' }} />}
-          <PaymentList
-            payments={payments}
-            onUpdatePayments={(messageId: string) => {
-              setPayments(prev => prev.filter(p => p.messageId !== messageId))
-            }}
-            isBulkAccepting={bulkAccepting}
-          />
+          {inboxStatus === 'loading' && (
+            <LinearProgress aria-label='Loading incoming payments' sx={{ mb: 2, borderRadius: 999 }} />
+          )}
+          {inboxStatus === 'failed' && (
+            <Alert
+              severity='warning'
+              sx={{ mb: 2 }}
+              action={<Button color='inherit' size='small' onClick={() => { void fetchPayments() }}>Try again</Button>}
+            >
+              Couldn’t load incoming payments.
+            </Alert>
+          )}
+          {(inboxStatus === 'ready' || payments.length > 0) && (
+            <PaymentList
+              payments={payments}
+              onUpdatePayments={(messageId: string) => {
+                setPayments(prev => prev.filter(p => p.messageId !== messageId))
+              }}
+              isBulkAccepting={bulkAccepting}
+            />
+          )}
         </Paper>
       </Box>
     </Container>
